@@ -1,0 +1,24 @@
+/* Bijoy HRMS — process pages (approval chains, requisitions, hiring, leave approvals, rosters, office attendance) */
+.fl-queue { grid-template-columns: repeat(auto-fill, minmax(460px, 1fr)); } @media (max-width: 560px) { .fl-queue { grid-template-columns: 1fr; } }
+.fl-trk-wrap { overflow-x: auto; padding: 4px 2px 0; margin: 6px 0 10px; } .fl-trk { min-width: max-content; margin: 0 0 10px; } .fl-trk li { min-width: 92px; text-align: center; }
+.fl-trk li span { display: flex; flex-direction: column; align-items: center; line-height: 1.25; } .fl-trk li span em { font-style: normal; font-size: 10.5px; font-weight: 500; color: var(--text-3); max-width: 96px; }
+.fl-id { font-style: normal; font-size: 11.5px; font-weight: 600; color: var(--text-3); margin-left: 6px; }
+.fl-tags, .fl-rounds { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 4px; }
+.fl-tag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 99px; font-size: 12px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); } .fl-tag svg { width: 13px; height: 13px; }
+.fl-tag.rep { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); color: var(--accent); }
+.fl-trail { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--border); }
+.fl-trail li { position: relative; padding: 0 0 14px 14px; display: flex; flex-direction: column; gap: 2px; } .fl-trail li::before { content: ''; position: absolute; left: -22px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface-2); border: 2px solid var(--border-strong); }
+.fl-trail li.approved::before { background: var(--accent); border-color: var(--accent); } .fl-trail li.rejected::before { background: var(--bad); border-color: var(--bad); }
+.fl-trail li span { font-size: 12.5px; color: var(--text-3); } .fl-trail li em { font-style: normal; font-size: 12.5px; color: var(--text-2); }
+.fl-lvls { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.fl-lvls li { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); } .fl-lvls li b { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11.5px; background: var(--accent); color: #fff; } .fl-lvls li span { flex: 1; } .fl-lvls li em { font-style: normal; font-size: 11.5px; color: var(--text-3); }
+.fl-sw, .fl-chk { display: flex; align-items: center; gap: 10px; cursor: pointer; } .fl-sw span b, .fl-chk span b { display: block; font-size: 13.5px; } .fl-sw span em, .fl-chk span em { display: block; font-style: normal; font-size: 12px; color: var(--text-3); font-weight: 400; }
+.fl-checks, .fl-chan { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.fl-checks .fl-chk, .fl-chan .fl-chk { padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); } .fl-chan .fl-chk { justify-content: space-between; } .fl-chan .fl-chk span { flex: 1; } .fl-chan .fl-chk.on { border-color: color-mix(in srgb, var(--ok) 45%, var(--border)); }
+.fl-kw { max-width: 520px; margin-bottom: 14px; }
+.fl-sk { display: inline-block; margin: 2px 4px 2px 0; padding: 1px 8px; border-radius: 99px; font-size: 11.5px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-3); } .fl-sk.hit { background: color-mix(in srgb, var(--ok) 14%, var(--surface)); border-color: color-mix(in srgb, var(--ok) 45%, var(--border)); color: var(--ok); font-weight: 600; }
+.fl-score { width: 90px; height: 6px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 8px; } .fl-score i { display: block; height: 100%; } .fl-score i.ok { background: var(--ok); } .fl-score i.mid { background: var(--warn); } .fl-score i.low { background: var(--bad); }
+.fl-pass { color: var(--ok); } .fl-fail { color: var(--bad); }
+.fl-docs { list-style: none; margin: 0 0 12px; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; } @media (max-width: 560px) { .fl-docs { grid-template-columns: 1fr; } }
+.fl-bulk { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: center; } @media (max-width: 700px) { .fl-bulk { grid-template-columns: 1fr; } }
+.fl-sim .fl-big { margin: 10px 0; font-size: 20px; } .fl-sim.ok { border-left: 4px solid var(--ok); } .fl-sim.warn { border-left: 4px solid var(--warn); } .fl-sim.bad { border-left: 4px solid var(--bad); }

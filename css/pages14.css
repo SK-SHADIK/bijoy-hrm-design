@@ -1,0 +1,21 @@
+/* pages14 — holiday calendar, shift changes, roster assignment, day-type checker */
+.p14-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.p14-cal .h{font-size:12px;font-weight:600;text-align:center;color:var(--muted,#7a8190);padding:4px 0}
+.p14-cal .c{min-height:76px;border:1px solid rgba(128,128,128,.22);border-radius:8px;padding:5px 6px;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:11px;text-align:left;background:transparent;color:inherit;overflow:hidden}
+.p14-cal .c b{font-size:13px}
+.p14-cal .c.x{visibility:hidden}
+.p14-cal .c.today{outline:2px solid #3b82f6}
+.p14-cal .c.Festival{background:rgba(245,158,11,.20)}
+.p14-cal .c.Government{background:rgba(59,130,246,.20)}
+.p14-cal .c.Alt{background:rgba(168,85,247,.20)}
+.p14-cal .c.Fri{background:rgba(128,128,128,.16)}
+.p14-lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin:10px 0}
+.p14-lg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-2px}
+.p14-chk{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.p14-chk li{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:8px;border:1px solid rgba(128,128,128,.22)}
+.p14-chk li.ok{background:rgba(34,197,94,.10)}
+.p14-chk li.bad{background:rgba(239,68,68,.12)}
+.p14-chk li span{display:block;font-size:12px;opacity:.8}
+.p14-steps{margin:8px 0 0;padding-left:20px;display:grid;gap:6px}
+.p14-big{font-size:22px;margin:6px 0}
+.p14-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
