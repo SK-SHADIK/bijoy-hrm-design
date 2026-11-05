@@ -1,4 +1,4 @@
-/* Bijoy HRMS — Expense claims (design only: static mock data, actions show toasts) */
+/* Sentradesk HRMS — Expense claims (design only: static mock data, actions show toasts) */
 (function () {
   const B = window.B;
   const { ic, esc } = B;

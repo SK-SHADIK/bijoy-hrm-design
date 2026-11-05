@@ -1,4 +1,4 @@
-/* Bijoy HRMS — Disciplinary & Grievance module. Cases, show-cause notices, hearings, decisions and appeals; grievances with SLA.
+/* Sentradesk HRMS — Disciplinary & Grievance module. Cases, show-cause notices, hearings, decisions and appeals; grievances with SLA.
    Data lives in the browser (localStorage) so the whole flow is usable in the design. */
 (function () {
   const B = window.B;

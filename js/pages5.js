@@ -1,4 +1,4 @@
-/* Bijoy HRMS — Notice board. Admin publishes notices; employees read them (stored in the browser, shared by both roles). */
+/* Sentradesk HRMS — Notice board. Admin publishes notices; employees read them (stored in the browser, shared by both roles). */
 (function () {
   const B = window.B;
   const { ic, esc } = B;

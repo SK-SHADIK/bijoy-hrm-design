@@ -1,4 +1,4 @@
-/* Bijoy HRMS — Process pages that follow the HR requirements document:
+/* Sentradesk HRMS — Process pages that follow the HR requirements document:
    Approval chains (shared engine), Hiring requisitions + hiring process, Leave approvals,
    Rosters + late rules, Office attendance (Tip Soi + ZKTeco) and WFH open dates.
    Data lives in the browser (localStorage), same pattern as the Work From Home module. */

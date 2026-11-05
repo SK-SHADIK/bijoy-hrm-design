@@ -1,4 +1,4 @@
-/* Bijoy HRMS — Leave rules gaps: Apply for leave (rules engine), Sick overflow & LWP, Compensatory leave,
+/* Sentradesk HRMS — Leave rules gaps: Apply for leave (rules engine), Sick overflow & LWP, Compensatory leave,
    Management actions on approved leave, Leave reports, Leave types & rules.
    Own store 'bijoy-leaves-db-v1'. Reads holidays from 'bijoy-holiday-db-v1' ({days:[{date,type}]}) when present. */
 (function () {

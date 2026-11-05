@@ -1,4 +1,4 @@
-/* Bijoy HRMS — process pages (approval chains, requisitions, hiring, leave approvals, rosters, office attendance) */
+/* Sentradesk HRMS — process pages (approval chains, requisitions, hiring, leave approvals, rosters, office attendance) */
 .fl-queue { grid-template-columns: repeat(auto-fill, minmax(460px, 1fr)); } @media (max-width: 560px) { .fl-queue { grid-template-columns: 1fr; } }
 .fl-trk-wrap { overflow-x: auto; padding: 4px 2px 0; margin: 6px 0 10px; } .fl-trk { min-width: max-content; margin: 0 0 10px; } .fl-trk li { min-width: 92px; text-align: center; }
 .fl-trk li span { display: flex; flex-direction: column; align-items: center; line-height: 1.25; } .fl-trk li span em { font-style: normal; font-size: 10.5px; font-weight: 500; color: var(--text-3); max-width: 96px; }

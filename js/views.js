@@ -1,4 +1,4 @@
-/* Bijoy HRMS — generic DocType views: List, Report, Kanban, Calendar, Cards, and Form */
+/* Sentradesk HRMS — generic DocType views: List, Report, Kanban, Calendar, Cards, and Form */
 (function () {
   const B = window.B;
   const { ic, esc } = B;
@@ -40,7 +40,7 @@
       case 'dept': return sel(['Management', ...B.DEPTS]);
       case 'branch': return sel(B.BRANCHES);
       case 'desig': return sel(DESIGS);
-      case 'company': return sel([B.COMPANY, 'Bijoy Digital Services', 'Bijoy Foundation']);
+      case 'company': return sel([B.COMPANY, 'Sentradesk Digital Services', 'Sentradesk Foundation']);
       case 'st': case 'pick': return sel(c.arg === 'x' ? [] : c.arg.split('|'));
       case 'date': case 'pdate': case 'fdate': return `<input class="inp ${cls || ''}" type="date" value="${v}" ${dis} data-chg="fdirty">`;
       case 'datetime': return `<input class="inp ${cls || ''}" type="datetime-local" value="${v}" ${dis} data-chg="fdirty">`;
@@ -80,8 +80,8 @@
     const cols = shownCols(doc, s);
     const total = rows.length;
     const pageRows = report ? rows : rows.slice(s.page * s.size, (s.page + 1) * s.size);
-    const head = `<tr><th class="ck"><input type="checkbox" data-act="sel-all" ${s.sel.size && s.sel.size === pageRows.length ? 'checked' : ''}></th><th>Name</th>${cols.map((x) => `<th class="${isNum(x.c) ? 'r' : ''}">${esc(x.c.label)}</th>`).join('')}${report ? '' : '<th class="r">Modified</th>'}</tr>`;
-    const rowHTML = (r) => `<tr data-act="row" data-href="${B.docHref(doc, r.name)}" class="${s.sel.has(r.name) ? 'sel' : ''}"><td class="ck"><input type="checkbox" data-act="sel" data-name="${esc(r.name)}" ${s.sel.has(r.name) ? 'checked' : ''}></td><td class="idc"><a href="${B.docHref(doc, r.name)}">${esc(r.name)}</a></td>${cols.map((x) => `<td class="${isNum(x.c) ? 'r' : ''}">${B.cell(x.c, r.vals[x.ci])}</td>`).join('')}${report ? '' : `<td class="r modc">${r.comments ? `<span class="cm">${ic('message', 13)}${r.comments}</span>` : ''}<span>${B.ago(r.modified)}</span></td>`}</tr>`;
+    const head = `<tr><th class="ck"><input type="checkbox" data-act="sel-all" ${s.sel.size && s.sel.size === pageRows.length ? 'checked' : ''}></th><th>Name</th>${cols.map((x) => `<th class="${isNum(x.c) ? 'r' : ''}">${esc(x.c.label)}</th>`).join('')}${report ? '' : '<th class="r">Modified</th>'}${doc.profile && !report ? '<th class="r">Action</th>' : ''}</tr>`;
+    const rowHTML = (r) => `<tr data-act="row" data-href="${B.docHref(doc, r.name)}" class="${s.sel.has(r.name) ? 'sel' : ''}"><td class="ck"><input type="checkbox" data-act="sel" data-name="${esc(r.name)}" ${s.sel.has(r.name) ? 'checked' : ''}></td><td class="idc"><a href="${B.docHref(doc, r.name)}">${esc(r.name)}</a></td>${cols.map((x) => `<td class="${isNum(x.c) ? 'r' : ''}">${B.cell(x.c, r.vals[x.ci])}</td>`).join('')}${report ? '' : `<td class="r modc">${r.comments ? `<span class="cm">${ic('message', 13)}${r.comments}</span>` : ''}<span>${B.ago(r.modified)}</span></td>`}${doc.profile && !report ? `<td class="r ed-act"><a class="btn sm" href="#/employee/${esc(r.name)}">${ic('eye', 14)}Details</a><a class="icon-btn sm" href="#/employee/${esc(r.name)}/edit" aria-label="Edit" title="Edit">${ic('edit', 15)}</a></td>` : ''}</tr>`;
     let body = '';
     if (report && s.group) {
       const gi = +s.group; const groups = {};

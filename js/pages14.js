@@ -1,4 +1,4 @@
-/* Bijoy HRMS — Roster gaps: Holiday calendar, Shift change & swap, Roster assignment, Day-type checker.
+/* Sentradesk HRMS — Roster gaps: Holiday calendar, Shift change & swap, Roster assignment, Day-type checker.
    Reads (never writes) 'bijoy-flow-db-v1' (rosters, late rule, leaves) and 'bijoy-payroll-lock-v1'.
    Owns 'bijoy-holiday-db-v1' and 'bijoy-roster-db-v1'. Exposes B.rosterOn(empId, date) and B.holiday. */
 (function () {

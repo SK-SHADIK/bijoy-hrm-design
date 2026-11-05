@@ -1,5 +1,5 @@
-/* Bijoy HRMS — tokens, base & app shell
-   White theme (default) + true-black dark theme. Brand: Bijoy blue & orange. */
+/* Sentradesk HRMS — tokens, base & app shell
+   White theme (default) + true-black dark theme. Brand: Sentradesk blue & orange. */
 :root {
   --bg: #f6f7fb; --surface: #ffffff; --surface-2: #f2f4f9; --surface-3: #e9ecf4;
   --border: #e5e8f0; --border-strong: #d3d8e4;
@@ -128,7 +128,7 @@ img, svg, video { max-width: 100%; }
 .page-head > * { min-width: 0; max-width: 100%; } .head-actions { flex-wrap: wrap; }
 @media (max-width: 360px) { .topbar [data-act='theme'], .topbar .role-sw { display: none; } }
 @media (max-width: 380px) { .content .page-head.sticky { margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px; } }
-/* brand: official Bijoy mark */
+/* brand: official Sentradesk mark */
 .logo-mark { background: none !important; box-shadow: none !important; border-radius: 0; width: 38px; height: 44px; }
 .logo-mark img { width: 100%; height: 100%; object-fit: contain; display: block; }
 /* grid children may shrink below their content so cards never push the page wider than the screen */

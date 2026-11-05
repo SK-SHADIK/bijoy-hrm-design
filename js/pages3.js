@@ -1,4 +1,4 @@
-/* Bijoy HRMS — Employee (self-service) dashboard */
+/* Sentradesk HRMS — Employee (self-service) dashboard */
 (function () {
   const B = window.B;
   const { ic, esc, kpi, mkSeries } = B;

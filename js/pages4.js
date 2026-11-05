@@ -1,4 +1,4 @@
-/* Bijoy HRMS — My Todos (personal todo list for admin and employee, stored per role in the browser) */
+/* Sentradesk HRMS — My Todos (personal todo list for admin and employee, stored per role in the browser) */
 (function () {
   const B = window.B;
   const { ic, esc } = B;

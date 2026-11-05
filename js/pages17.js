@@ -1,4 +1,4 @@
-/* Bijoy HRMS — Roster Planner: month grid (employees × days) with shift slot, start/end time and Day Off / CTO / Leave per day.
+/* Sentradesk HRMS — Roster Planner: month grid (employees × days) with shift slot, start/end time and Day Off / CTO / Leave per day.
    Dates before today are locked. Data lives in the browser (localStorage). Reads the holiday calendar (B.holiday) when present. */
 (function () {
   const B = window.B;

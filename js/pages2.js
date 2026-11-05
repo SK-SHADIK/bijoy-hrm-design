@@ -1,4 +1,4 @@
-/* Bijoy HRMS — custom pages (part 2): Leaves, Payroll, Recruitment, Performance, Self Service, Reports, Settings, Announcements, Login */
+/* Sentradesk HRMS — custom pages (part 2): Leaves, Payroll, Recruitment, Performance, Self Service, Reports, Settings, Announcements, Login */
 (function () {
   const B = window.B;
   const { ic, esc, head, kpi, mkSeries } = B;
@@ -90,7 +90,7 @@
   B.page.payslip = () => {
     const e = B.emp(slipEmp), s = B.slipFor(e), m = B.MONTHS_FULL[B.today.getMonth()] + ' ' + B.today.getFullYear();
     return `${head('Payslip Viewer', 'Printable, brand-ready salary slip', `<select class="inp sm" data-chg="slip-emp">${E.map((x) => `<option value="${x.id}" ${x.id === slipEmp ? 'selected' : ''}>${x.name}</option>`).join('')}</select><button class="btn" data-act="toast" data-msg="Payslip emailed to ${esc(e.first)}">${ic('mail', 16)}Email</button><button class="btn primary" data-act="print">${ic('print', 16)}Print / PDF</button>`, crumb('Payroll', 'Payslip'))}
-      <div class="paper"><div class="pp-h"><div class="pp-brand"><span class="logo-chip"><img src="logo.png" alt="Bijoy"></span><div><b>${B.COMPANY}</b><span>House 45, Road 27, Gulshan-1, Dhaka 1212 · hr@bijoy.com.bd</span></div></div><div class="pp-t"><em>PAYSLIP</em><b>${m}</b><span>Slip no. HR-SAL-${B.today.getFullYear()}-${e.id.slice(-3)}</span></div></div>
+      <div class="paper"><div class="pp-h"><div class="pp-brand"><span class="logo-chip"><img src="logo.png" alt="Sentradesk"></span><div><b>${B.COMPANY}</b><span>House 45, Road 27, Gulshan-1, Dhaka 1212 · hr@bijoy.com.bd</span></div></div><div class="pp-t"><em>PAYSLIP</em><b>${m}</b><span>Slip no. HR-SAL-${B.today.getFullYear()}-${e.id.slice(-3)}</span></div></div>
         <div class="pp-info">${[['Employee', e.name], ['Employee ID', e.id], ['Designation', e.desig], ['Department', e.dept], ['Date of Joining', B.fdate(e.doj)], ['Branch', e.branch], ['Bank A/C', '•••• 7741 (BRAC)'], ['Payment days', '26 / 26']].map((r) => `<div><span>${r[0]}</span><b>${esc(r[1])}</b></div>`).join('')}</div>
         <div class="pp-tables"><table><thead><tr><th>Earnings</th><th class="r">Amount</th></tr></thead><tbody>${s.earn.map((x) => `<tr><td>${x[0]}</td><td class="r">${B.money(x[1])}</td></tr>`).join('')}</tbody><tfoot><tr><td>Gross Earnings</td><td class="r">${B.money(s.gross)}</td></tr></tfoot></table>
           <table><thead><tr><th>Deductions</th><th class="r">Amount</th></tr></thead><tbody>${s.ded.map((x) => `<tr><td>${x[0]}</td><td class="r">${B.money(x[1])}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total Deductions</td><td class="r">${B.money(s.dt)}</td></tr></tfoot></table></div>
@@ -163,7 +163,7 @@
   const nm = (l, h, v) => `<div class="set-row"><div><b>${l}</b>${h ? `<span>${h}</span>` : ''}</div><input class="inp sm num-in" type="number" value="${v}" data-inp="fdirty"></div>`;
   const settingsPage = (title, sub, tabs, crumbL) => `${head(title, sub, `<button class="btn primary" data-act="fsave">${ic('check', 16)}Save</button>`, crumb('Setup', crumbL))}<div class="set-layout"><nav class="set-nav">${tabs.map((t, i) => `<button class="${i ? '' : 'on'}" data-act="stab" data-i="${i}">${ic(t[1], 16)}${t[0]}</button>`).join('')}</nav><div class="set-body">${tabs.map((t, i) => `<div class="card pad set-p" ${i ? 'hidden' : ''} data-i="${i}"><h3 class="ct">${t[0]}</h3>${t[2]}</div>`).join('')}</div></div>`;
   B.act.stab = (t) => { B.$$('.set-nav button').forEach((b) => b.classList.toggle('on', b === t)); B.$$('.set-p').forEach((p) => (p.hidden = p.dataset.i !== t.dataset.i)); };
-  B.page['hr-settings'] = () => settingsPage('HR Settings', 'Global configuration for Bijoy HRMS', [
+  B.page['hr-settings'] = () => settingsPage('HR Settings', 'Global configuration for Sentradesk HRMS', [
     ['Employee', 'users', sl('Employee Naming By', 'How new employee IDs are generated', ['Naming Series', 'Full Name', 'Employee Number'], 'Naming Series') + nm('Retirement Age', 'Used for retirement reminders', 60) + nm('Standard Working Hours', 'Per day, used for hour-based attendance', 8) + sw('Send Birthday Reminders', 'Notify HR managers daily', true) + sw('Send Work Anniversary Reminders', '', true) + sw('Expire Employee Advance on Cancel', '', false)],
     ['Leave & Expense', 'calendar', sw('Leave Approver Mandatory In Leave Application', '', true) + sw('Expense Approver Mandatory In Expense Claim', '', true) + sw('Show Leaves Of All Department Members In Calendar', '', true) + sw('Send Leave Notification', 'Email approvers on new applications', true) + sw('Auto Leave Encashment', 'Encash unused leaves at period end', false) + nm('Restrict Backdated Leave Applications (days)', '0 = allow any', 7) + sw('Allow Overlap Between Leaves', '', false)],
     ['Attendance & Shift', 'clock', sw('Allow Multiple Shift Assignments for Same Date', '', false) + sw('Auto Mark Absent for Unmarked Days', '', true) + nm('Late Entry Grace Period (min)', '', 10) + sw('Enable Geo-fenced Check-in', 'Require location within shift radius', true) + sw('Allow Employees to Check In from Mobile', '', true) + sl('Working Days Basis', '', ['Mon–Thu, Sat, Sun (Friday off)', 'Mon–Fri', 'Mon–Sat'], 'Mon–Thu, Sat, Sun (Friday off)')],
@@ -187,7 +187,7 @@
     const mods = [['users', 'Talent Acquisition'], ['calendar', 'Leave'], ['clock', 'Roster'], ['user-check', 'Attendance'], ['dollar', 'Payroll']];
     return `<div class="lgn">
     <aside class="lg-art"><div class="lg-mesh"></div><div class="lg-grid"></div><div class="orb o1"></div><div class="orb o2"></div>
-      <div class="lg-top"><span class="logo-chip lg"><img src="logo.png" alt="Bijoy"></span><div class="lg-brand"><b>Bijoy</b><em>HRMS</em></div></div>
+      <div class="lg-top"><span class="logo-chip lg"><img src="logo.png" alt="Sentradesk"></span><div class="lg-brand"><b>Sentradesk</b><em>HRMS</em></div></div>
       <div class="lg-hero"><span class="lg-eyebrow">${ic('shield', 14)}Secure workspace for HR teams</span>
         <h1>One calm place for <em>people, time</em> and payroll.</h1>
         <p>From requisition to final settlement. Roster, attendance, leave and payroll follow your company policy and stay in sync.</p>
@@ -195,11 +195,11 @@
       <div class="lg-float"><div class="card glass lgf-a"><div class="lgf-h"><span>${ic('user-check', 16)}</span><div><b>Present today</b><em>Tip Soi · ZKTeco · Mobile</em></div></div><div class="lgf-n">21<small> / 26</small></div><div class="lgf-bar"><i style="width:81%"></i></div></div>
         <div class="card glass lgf-b"><div class="lgf-h"><span>${ic('dollar', 16)}</span><div><b>September payroll</b><em>Ready for approval</em></div></div><div class="lgf-n">৳ 28.4 L</div><div class="lgf-chips"><span>Late slab applied</span><span>Locked</span></div></div>
         <div class="card glass lgf-c"><span class="lgf-dot"></span>3 leave requests waiting for you</div></div>
-      <div class="lg-foot">© ${new Date().getFullYear()} Bijoy · Human Resource Management System</div>
+      <div class="lg-foot">© ${new Date().getFullYear()} Sentradesk · Human Resource Management System</div>
     </aside>
     <main class="lg-form">${B.themeBtn('bordered theme-tg')}
       <form class="lg-card" id="lg-form" onsubmit="B.act['lg-submit']();return false" novalidate>
-        <span class="logo-chip"><img src="logo.png" alt="Bijoy"></span>
+        <span class="logo-chip"><img src="logo.png" alt="Sentradesk"></span>
         <h2>Welcome back</h2><p class="lg-sub">Sign in to continue to your HR workspace.</p>
         <div class="fld"><label for="lg-email">Work email</label><div class="lg-in">${ic('mail', 17)}<input id="lg-email" class="inp lg" type="email" value="rahim.uddin@bijoy.com.bd" autocomplete="username" placeholder="name@bijoy.com.bd"></div><small class="lg-err" id="lg-e1"></small></div>
         <div class="fld"><label for="lg-pw">Password</label><div class="lg-in">${ic('lock', 17)}<input id="lg-pw" class="inp lg" type="password" value="password123" autocomplete="current-password" placeholder="Enter your password"><button type="button" class="lg-eye" data-act="lg-eye" aria-label="Show password">${ic('eye', 17)}</button></div><small class="lg-err" id="lg-e2"></small></div>

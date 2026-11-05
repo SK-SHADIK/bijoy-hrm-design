@@ -1,4 +1,4 @@
-/* Bijoy HRMS — app shell, router, command palette, theme */
+/* Sentradesk HRMS — app shell, router, command palette, theme */
 (function () {
   const B = window.B;
   const { ic, esc } = B;
@@ -26,9 +26,9 @@
   const MY_NAV = [['home', 'My Dashboard', '#/page/my-dashboard'], ['user', 'My Profile', '#/employee/HR-EMP-00001'], ['clock', 'My Attendance', '#/list/attendance'], ['home', 'My Work From Home', '#/page/my-wfh'], ['calendar', 'My Leaves', '#/list/leave-application'], ['file', 'My Payslips', '#/page/payslip'], ['card', 'My Expense Claims', '#/page/my-claims'], ['briefcase', 'My Assets', '#/page/my-assets'], ['check-circle', 'My Todos', '#/page/todo']];
   function shell() {
     const emp = B.role === 'employee', U = emp ? B.ME : { name: 'Rahim Uddin', desig: 'HR Manager' };
-    const links = emp ? EMP_NAV.map((g) => `<div class="nm open"><div class="nm-h"><a href="#" onclick="return false"><span>${g[0]}</span></a></div><div class="nm-items flat">${g[1].map((i) => `<a href="${i[2]}" data-href="${i[2]}">${ic(i[0], 15)}<span>${i[1]}</span></a>`).join('')}</div></div>`).join('') : (() => { const nm = (m) => `<div class="nm" data-m="${m.id}"><div class="nm-h"><a href="#/module/${m.id}" data-act="nm-lbl">${ic(m.icon, 18)}<span>${m.label}</span></a><button class="nm-t" data-act="nm-tg" aria-label="Toggle ${m.label}">${ic('down', 15)}</button></div><div class="nm-items">${m.items.map((tok) => { const i = B.navItem(tok); return `<a href="${i.href}" data-href="${i.href}">${ic(i.icon, 15)}<span>${esc(i.label)}</span></a>`; }).join('')}</div></div>`; const first = B.NAV.filter((m) => B.REQ_NAV.includes(m.id)).sort((a, b) => B.REQ_NAV.indexOf(a.id) - B.REQ_NAV.indexOf(b.id)); return first.map(nm).join('') + `<div class="nm" data-m="my"><div class="nm-h"><a href="#/page/my-dashboard" data-act="nm-lbl">${ic('user', 18)}<span>My Workspace</span></a><button class="nm-t" data-act="nm-tg" aria-label="Toggle My Workspace">${ic('down', 15)}</button></div><div class="nm-items">${MY_NAV.map((i) => `<a href="${i[2]}" data-href="${i[2]}">${ic(i[0], 15)}<span>${i[1]}</span></a>`).join('')}</div></div>` + B.NAV.filter((m) => !B.REQ_NAV.includes(m.id)).map(nm).join(''); })();
+    const links = emp ? EMP_NAV.map((g) => `<div class="nm open"><div class="nm-h"><a href="#" onclick="return false"><span>${g[0]}</span></a></div><div class="nm-items flat">${g[1].map((i) => `<a href="${i[2]}" data-href="${i[2]}">${ic(i[0], 15)}<span>${i[1]}</span></a>`).join('')}</div></div>`).join('') : (() => { const nm = (m) => `<div class="nm" data-m="${m.id}"><div class="nm-h"><a href="#/module/${m.id}" data-act="nm-lbl">${ic(m.icon, 18)}<span>${m.label}</span></a><button class="nm-t" data-act="nm-tg" aria-label="Toggle ${m.label}">${ic('down', 15)}</button></div><div class="nm-items">${m.items.map((tok) => { const i = B.navItem(tok); return `<a href="${i.href}" data-href="${i.href}">${ic(i.icon, 15)}<span>${esc(i.label)}</span></a>`; }).join('')}</div></div>`; const first = B.NAV.filter((m) => B.REQ_NAV.includes(m.id)).sort((a, b) => B.REQ_NAV.indexOf(a.id) - B.REQ_NAV.indexOf(b.id)); return first.map(nm).join('') +  B.NAV.filter((m) => !B.REQ_NAV.includes(m.id)).map(nm).join(''); })();
     B.$('#app').innerHTML = `<div class="app" id="shell"><div class="scrim" data-act="nav-close"></div>
-      <aside class="sidebar" id="sidebar"><div class="sb-brand"><a href="#/" class="brand"><span class="logo-mark"><img src="bijoy-mark.png" alt="Bijoy"></span><div><b>Bijoy</b><em>HRMS</em></div></a><button class="icon-btn sm only-m" data-act="nav-close" aria-label="Close menu">${ic('x', 18)}</button></div>
+      <aside class="sidebar" id="sidebar"><div class="sb-brand"><a href="#/" class="brand"><div><img class="brand-wm" src="sentradesk-logo.png" alt="Sentradesk"><em>HRMS</em></div></a><button class="icon-btn sm only-m" data-act="nav-close" aria-label="Close menu">${ic('x', 18)}</button></div>
         <button class="sb-search" data-act="cmd">${ic('search', 16)}<span>Search or jump to…</span><kbd>Ctrl K</kbd></button>
         <nav class="sb-nav" id="sb-nav">${emp ? '' : `<a class="nl home" href="#/" data-href="#/">${ic('home', 18)}<span>HR Home</span></a>`}${links}</nav>
         <div class="sb-foot"><a href="#/employee/${emp ? B.ME.id : 'HR-EMP-00001'}">${B.avatar(U.name, 36)}<div><b>${U.name}</b><span>${emp ? U.desig : 'HR Manager'}</span></div></a><a class="icon-btn" href="#/login" title="Log out">${ic('logout', 17)}</a></div></aside>
@@ -62,20 +62,20 @@
     const h = location.hash || '#/';
     const parts = h.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
     const [k, a, b] = parts;
-    if (k === 'login') { mode = 'login'; document.title = 'Sign in · Bijoy HRMS'; B.$('#app').innerHTML = B.renderLogin(); return; }
+    if (k === 'login') { mode = 'login'; document.title = 'Sign in · Sentradesk HRMS'; B.$('#app').innerHTML = B.renderLogin(); return; }
     if (mode !== 'shell') { shell(); mode = 'shell'; }
     let html, title = 'HR Home';
     try {
       if (!k) { if (B.role === 'employee') { html = B.page.me(); B.onMount(B.onMe); title = 'My Dashboard'; } else { html = B.page.home(); B.onMount(B.onHome); } }
       else if (k === 'list' && B.docs[a]) { html = B.renderList(a, b); title = B.docs[a].label; }
       else if (k === 'form' && B.docs[a]) { html = B.renderForm(a, b || 'new'); title = B.docs[a].label; }
-      else if (k === 'employee') { html = B.renderEmployee(a); title = 'Employee'; }
+      else if (k === 'employee') { html = b === 'edit' ? B.renderEmployeeEdit(a) : B.renderEmployee(a); title = b === 'edit' ? 'Edit Employee' : 'Employee'; }
       else if (k === 'module') { html = B.renderModule(a); title = (B.NAV.find((n) => n.id === a) || {}).label || 'Module'; }
       else if (k === 'page' && B.page[a]) { html = B.page[a](); title = B.PAGES[a].label; if (a === 'my-dashboard') B.onMount(B.onMe); if (a === 'my-wfh' && B.onMy) B.onMount(B.onMy); }
       else { html = `<div class="empty big">${ic('search', 44)}<b>Page not found</b><span>The page you're looking for doesn't exist.</span><a class="btn primary" href="#/">Back to Home</a></div>`; title = 'Not found'; }
     } catch (err) { console.error(err); html = `<div class="empty big">${ic('alert', 44)}<b>Something went wrong</b><span>${esc(err.message)}</span></div>`; }
     const v = B.$('#view'); v.innerHTML = `<div class="fade">${html}</div>`;
-    document.title = title + ' · Bijoy HRMS';
+    document.title = title + ' · Sentradesk HRMS';
     window.scrollTo(0, 0);
     B.act['nav-close']();
     let active = h; if (k === 'list' && b) active = '#/list/' + a; if (k === 'form') active = '#/list/' + a; if (k === 'employee') active = '#/list/employee';

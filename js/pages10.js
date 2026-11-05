@@ -1,4 +1,4 @@
-/* Bijoy HRMS — Work From Home module: application, supervisor approval, online attendance (check-in/out) and a location tracker.
+/* Sentradesk HRMS — Work From Home module: application, supervisor approval, online attendance (check-in/out) and a location tracker.
    Data lives in the browser (localStorage). Location uses the device GPS when allowed; the demo can also simulate positions. */
 (function () {
   const B = window.B;

@@ -1,4 +1,4 @@
-/* Bijoy HRMS — Talent acquisition gaps: Rejection & Talent Pool, Offer management, Onboarding documents,
+/* Sentradesk HRMS — Talent acquisition gaps: Rejection & Talent Pool, Offer management, Onboarding documents,
    Joining & first day (with no-show), Probation. Own localStorage db; reads the hiring flow db read-only. */
 (function () {
   const B = window.B;
@@ -111,7 +111,7 @@
     }));
     return list;
   };
-  const noticeText = (c) => `Dear ${c.name},\n\nThank you for your interest in the ${c.desig} position at Bijoy and for the time you invested in our selection process (stage: ${c.stage}). After careful consideration we will not be moving forward with your application.\n\n${c.outcome === 'Talent Pool' ? 'With your consent we will keep your profile in our talent pool and contact you when a suitable vacancy opens.' : 'Your application is now closed.'}\n\nWe wish you every success.\nHR, Bijoy`;
+  const noticeText = (c) => `Dear ${c.name},\n\nThank you for your interest in the ${c.desig} position at Sentradesk and for the time you invested in our selection process (stage: ${c.stage}). After careful consideration we will not be moving forward with your application.\n\n${c.outcome === 'Talent Pool' ? 'With your consent we will keep your profile in our talent pool and contact you when a suitable vacancy opens.' : 'Your application is now closed.'}\n\nWe wish you every success.\nHR, Sentradesk`;
   page('candidate-rejections', () => {
     const d = D(), t = tab('rj', 'pending'), pend = pendingList(), pool = d.cands.filter((c) => c.outcome === 'Talent Pool'), q = (d.q || '').toLowerCase();
     let body = '';
@@ -148,7 +148,7 @@
      ===================================================================== */
   const offById = (id) => D().offers.find((o) => o.id === id);
   const curSt = (o) => o.stages.findIndex((s) => s.s === 'Pending');
-  const letter = (o) => `<div class="card pad" style="background:var(--bg,#fff)"><p style="text-align:right">${fmt(today())}</p><p>Dear <b>${esc(o.cand)}</b>,</p><p>We are pleased to offer you the position of <b>${esc(o.desig)}</b> (${esc(o.dept)}) at Bijoy${o.rev ? ` (revised offer, revision ${o.rev})` : ''}.</p><table class="dt"><thead><tr><th>Salary component</th><th class="r">Monthly</th></tr></thead><tbody>${o.comps.map((c) => `<tr><td>${esc(c.n)}</td><td class="r">${money(c.a)}</td></tr>`).join('')}<tr><td><b>Gross salary</b></td><td class="r"><b>${money(gross(o))}</b></td></tr></tbody></table><p>Proposed joining date: <b>${fmt(o.joining)}</b>. Probation period: <b>${o.probation} months</b>. This offer is valid until <b>${fmt(o.valid)}</b>; please return a signed copy by then.</p><p>Regards,<br><b>Rahim Uddin</b>, HR</p></div>`;
+  const letter = (o) => `<div class="card pad" style="background:var(--bg,#fff)"><p style="text-align:right">${fmt(today())}</p><p>Dear <b>${esc(o.cand)}</b>,</p><p>We are pleased to offer you the position of <b>${esc(o.desig)}</b> (${esc(o.dept)}) at Sentradesk${o.rev ? ` (revised offer, revision ${o.rev})` : ''}.</p><table class="dt"><thead><tr><th>Salary component</th><th class="r">Monthly</th></tr></thead><tbody>${o.comps.map((c) => `<tr><td>${esc(c.n)}</td><td class="r">${money(c.a)}</td></tr>`).join('')}<tr><td><b>Gross salary</b></td><td class="r"><b>${money(gross(o))}</b></td></tr></tbody></table><p>Proposed joining date: <b>${fmt(o.joining)}</b>. Probation period: <b>${o.probation} months</b>. This offer is valid until <b>${fmt(o.valid)}</b>; please return a signed copy by then.</p><p>Regards,<br><b>Rahim Uddin</b>, HR</p></div>`;
   const offerActions = (o) => {
     const a = [], st = o.status;
     if (st === 'Draft') a.push(['of-sub', 'Submit for approval', 'primary'], ['of-edit', 'Edit', '']);

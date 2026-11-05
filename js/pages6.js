@@ -1,4 +1,4 @@
-/* Bijoy HRMS — Asset management: masters (types, manufacturers, vendors, locations), register, assignments, requests, maintenance.
+/* Sentradesk HRMS — Asset management: masters (types, manufacturers, vendors, locations), register, assignments, requests, maintenance.
    Data lives in the browser (localStorage) so the whole flow is usable in the design. */
 (function () {
   const B = window.B;

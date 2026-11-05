@@ -1,4 +1,4 @@
-/* Bijoy HRMS — UI helpers: icons, formatting, charts, toast, modal, event delegation */
+/* Sentradesk HRMS — UI helpers: icons, formatting, charts, toast, modal, event delegation */
 (function () {
   const B = (window.B = window.B || {});
 

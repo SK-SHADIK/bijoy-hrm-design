@@ -1,8 +1,8 @@
-/* Bijoy HRMS — sample data + registry of every Frappe HRMS DocType / report / page */
+/* Sentradesk HRMS — sample data + registry of every Frappe HRMS DocType / report / page */
 (function () {
   const B = window.B;
 
-  B.COMPANY = 'Bijoy Technologies Ltd.';
+  B.COMPANY = 'Sentradesk Technologies Ltd.';
   B.DEPTS = ['Engineering', 'Design', 'Sales', 'Marketing', 'Finance', 'Human Resources', 'Operations', 'Customer Support'];
   B.BRANCHES = ['Dhaka HQ', 'Chattogram Office', 'Sylhet Office', 'Khulna Hub', 'Rajshahi Hub'];
   const NAMES = ['Rahim Uddin', 'Fatema Khatun', 'Tanvir Ahmed', 'Nusrat Jahan', 'Mahmud Hasan', 'Sadia Islam', 'Imran Hossain', 'Farhana Akter', 'Kamrul Hasan', 'Shirin Sultana', 'Arif Chowdhury', 'Mitu Rahman', 'Sabbir Ahmed', 'Nazmul Haque', 'Tasnim Rahman', 'Rafiq Islam', 'Sumaiya Begum', 'Jubayer Alam', 'Anika Tabassum', 'Shakil Mahmud', 'Lamia Karim', 'Rezaul Karim', 'Maliha Chowdhury', 'Towhid Hasan', 'Mehnaz Sultana', 'Ashraful Alam'];
@@ -205,7 +205,7 @@
   D('loan-repayment', 'Loan Repayment', 'loans', 'card', ['Applicant:emp', 'Posting Date:pdate:60', 'Amount Paid:money:2000..30000', 'Payment Type:pick:Salary Deduction|Cash|Bank Transfer', 'Status:st:Submitted|Draft'], { sub: true });
 
   /* --- Setup / masters --- */
-  D('company', 'Company', 'setup', 'building', ['Company:pick:x', 'Abbr:seq:BT,BDS,BF', 'Default Currency:txt:BDT', 'Country:txt:Bangladesh', 'Domain:pick:Software|Services|Non-profit'], { names: [B.COMPANY, 'Bijoy Digital Services', 'Bijoy Foundation'] });
+  D('company', 'Company', 'setup', 'building', ['Company:pick:x', 'Abbr:seq:BT,BDS,BF', 'Default Currency:txt:BDT', 'Country:txt:Bangladesh', 'Domain:pick:Software|Services|Non-profit'], { names: [B.COMPANY, 'Sentradesk Digital Services', 'Sentradesk Foundation'] });
   D('branch', 'Branch', 'setup', 'pin', ['Branch:pick:x', 'Employees:n:5..120', 'Manager:pick:Rahim Uddin|Fatema Khatun|Tanvir Ahmed'], { names: B.BRANCHES });
   D('department', 'Department', 'setup', 'org', ['Department:pick:x', 'Department Head:emp', 'Company:company', 'Employees:n:3..40', 'Is Group:bool'], { names: ['Management'].concat(B.DEPTS) });
   D('designation', 'Designation', 'setup', 'briefcase', ['Designation:pick:x', 'Description:txt:Role definition', 'Skills:n:0..8', 'Employees:n:1..25'], { names: ['Managing Director', 'CTO', 'CFO', 'COO', 'Senior Software Engineer', 'Software Engineer', 'UI/UX Designer', 'Sales Executive', 'Accountant', 'HR Executive', 'Support Agent', 'Intern'] });

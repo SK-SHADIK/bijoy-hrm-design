@@ -1,4 +1,4 @@
-/* Bijoy HRMS — Attendance gaps: Outside-office duty, Manual attendance, Early leave & going out,
+/* Sentradesk HRMS — Attendance gaps: Outside-office duty, Manual attendance, Early leave & going out,
    Mobile attendance security, WFH location/IP check, Attendance reports (feeds Payroll via B.attMonthly / B.attAdj).
    Data lives in localStorage (own key) — same pattern as pages10/pages11. */
 (function () {

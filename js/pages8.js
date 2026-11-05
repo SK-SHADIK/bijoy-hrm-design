@@ -1,4 +1,4 @@
-/* Bijoy HRMS — Loan & Advance management (design: mock data, actions show dialogs/toasts) */
+/* Sentradesk HRMS — Loan & Advance management (design: mock data, actions show dialogs/toasts) */
 (function () {
   const B = window.B;
   const { ic, esc } = B;
