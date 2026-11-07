@@ -42,6 +42,27 @@
     const pct = (n, d) => (d ? Math.round((n / d) * 1000) / 10 : 0);
     const deptCnt = B.DEPTS.map((d) => ({ label: d, value: E.filter((e) => e.dept === d).length })).filter((d) => d.value);
     const hires = E.filter((e) => e.status !== 'Left').sort((a, b) => (a.doj < b.doj ? 1 : -1)).slice(0, 5);
+
+    const dayDiff = (a, b) => Math.round((b - a) / 864e5);
+    const T0 = new Date(B.today.getFullYear(), B.today.getMonth(), B.today.getDate());
+    const nextOcc = (iso) => { const d = B.parse(iso); let n = new Date(T0.getFullYear(), d.getMonth(), d.getDate()); if (n < T0) n = new Date(T0.getFullYear() + 1, d.getMonth(), d.getDate()); return n; };
+    const inLbl = (n) => (n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : 'in ' + n + ' days');
+    const live = E.filter((e) => e.status !== 'Left');
+    const bdays = live.map((e) => { const n = nextOcc(e.dob); return { e, n, d: dayDiff(T0, n) }; }).sort((a, b) => a.d - b.d).slice(0, 4);
+    const annis = live.map((e) => { const n = nextOcc(e.doj); return { e, n, d: dayDiff(T0, n), y: n.getFullYear() - B.parse(e.doj).getFullYear() }; }).filter((x) => x.y >= 1).sort((a, b) => a.d - b.d).slice(0, 4);
+    const celebRow = (x, sub) => `<li>${B.avatar(x.e.name, 34)}<div><b>${esc(x.e.name)}</b><span>${sub}</span></div><button class="dx-wish ${x.d === 0 ? 'now' : ''}" data-act="dx-wish" data-n="${esc(x.e.first)}" title="Send wishes">${ic('gift', 14)}<em>${inLbl(x.d)}</em></button></li>`;
+    const HOL = [['Victory Day', 12, 16], ['Christmas Day', 12, 25], ['International Mother Language Day', 2, 21], ['Independence Day', 3, 26], ['May Day', 5, 1]].map((h) => { let n = new Date(T0.getFullYear(), h[1] - 1, h[2]); if (n < T0) n = new Date(T0.getFullYear() + 1, h[1] - 1, h[2]); return { name: h[0], n, d: dayDiff(T0, n) }; }).sort((a, b) => a.d - b.d).slice(0, 4);
+    const attSeg = [['Present', present, 'var(--ok)'], ['Late', late, 'var(--warn)'], ['On Leave', onLeave, 'var(--c4)'], ['Absent', absent, 'var(--bad)']];
+    const attTot = attSeg.reduce((a, x) => a + x[1], 0);
+    const hc = (() => { const j = mkSeries('hc-j', 12, 1, 5), l = mkSeries('hc-l', 12, 0, 2); const out = []; let cur = total; for (let i = 11; i >= 0; i--) { out[i] = cur; cur = cur - j[i] + l[i]; } return { head: out, j, l }; })();
+    const mLbl = Array.from({ length: 12 }, (_, i) => B.MONTHS[(T0.getMonth() - 11 + i + 12) % 12]);
+    const prob = live.map((e) => { const end = B.addDays(B.parse(e.doj), 180); return { e, end, d: dayDiff(T0, end), k: 'Probation' }; }).filter((x) => x.d >= -5 && x.d <= 60);
+    const cont = live.filter((e) => e.type === 'Contract' || e.type === 'Intern').map((e) => { const d = 12 + (B.hash(e.id) % 70); return { e, end: B.addDays(T0, d), d, k: e.type === 'Intern' ? 'Internship' : 'Contract' }; });
+    const expiries = prob.concat(cont).sort((a, b) => a.d - b.d).slice(0, 5);
+    const tone = (d) => (d <= 7 ? 'bad' : d <= 21 ? 'warn' : 'info');
+    const docs = [['Trade License Renewal', 'Legal', 6], ['Fire Safety Certificate', 'Compliance', 18], ['Work Permit — Expat Staff', 'Immigration', 27], ['Monthly TDS Deposit', 'Tax', 9], ['Provident Fund Return', 'Finance', 41]];
+    const hasTodos = !!B.todos; const tds = hasTodos ? B.todos.list() : [];
+    const tdOpen = tds.filter((t) => !t.done);
     const kp = (cls, icon, label, val, sub, up) => `<div class="card dx-kpi ${cls}"><span class="dx-ki">${ic(icon, 22)}</span><span class="dx-kl">${label}</span><b>${val}</b><em class="${up ? 'up' : ''}">${sub}</em></div>`;
     const apr = [['Leave', 'calendar', E[3], 'Sick Leave · 2 days', -4], ['Recruitment', 'user-plus', E[7], 'Sr. Designer · 1 position', -6], ['Training', 'book', E[12], 'Advanced Excel · 2 days', -8]];
     const leaves = [[E[3], 'Annual Leave', 'info', 1, 3], [E[7], 'Sick Leave', 'bad', 2, 4], [E[12], 'Casual Leave', 'warn', 3, 5], [E[9], 'Annual Leave', 'info', 6, 7]];
@@ -51,10 +72,18 @@
     const mods = B.NAV.filter((m) => !['selfservice', 'reports'].includes(m.id));
     const head = (t, link, href) => `<div class="ct-row"><h3 class="ct">${t}</h3>${link ? `<a class="link-btn" href="${href}">${link}</a>` : ''}</div>`;
     return `<div class="home dx">
-      <section class="dx-greet card"><span class="dx-gi">${ic('users', 26)}</span><div><h1>${greet[1]}, Rahim</h1><p>Here's what's happening with your HR today.</p></div>
+      <section class="dx-greet card"><span class="dx-gi">${ic('users', 26)}</span><div><h1>${greet[1]}, Rahim</h1><p>${B.fdate(B.iso(T0))} · <b>${apr.length}</b> approvals pending · <b>${onLeave}</b> on leave today · <b>${bdays.filter((x) => x.d === 0).length}</b> birthdays today</p></div>
         <div class="dx-gr"><span class="dx-quote">Great people build great companies.</span><button class="btn primary" data-act="hero-checkin" id="hero-ci">${ic('fingerprint', 16)}Check In</button><span class="dx-clock" id="hero-clock">--:--</span></div></section>
       <div class="dx-grid"><div class="dx-main">
         <section class="dx-kpis">${kp('c1', 'users', 'Total Employees', total, '+2 this month', 1)}${kp('ok', 'user-check', 'Active Employees', active.length, pct(active.length, total) + '% of total', 1)}${kp('warn', 'calendar', 'On Leave Today', onLeave, pct(onLeave, total) + '% of total', 0)}${kp('bad', 'file', 'Absent Today', absent, pct(absent, total) + '% of total', 0)}</section>
+
+        <section class="dx-2 dx-fx"><div class="card pad dx-snap"><div class="ct-row"><h3 class="ct">Today's Attendance</h3><span class="pill ok"><i class="live"></i>Live</span></div>
+            <div class="snap-top">${B.ring(Math.round((present / attTot) * 100), 112, Math.round((present / attTot) * 100) + '%', 'Present', 'var(--ok)')}<div class="snap-stats">${attSeg.map((x) => `<div><i style="background:${x[2]}"></i><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div></div>
+            <div class="snap-bar">${attSeg.map((x) => `<u style="flex:${x[1]};background:${x[2]}" data-tip="${x[0]}: ${x[1]}"></u>`).join('')}</div>
+            <div class="snap-foot"><div>${ic('clock', 14)}<span>Avg. check-in</span><b>09:12 AM</b></div><div>${ic('trend', 14)}<span>On-time rate</span><b>${Math.round(((present - late) / present) * 100)}%</b></div><a class="link-btn" href="#/page/attendance-dash">Details</a></div></div>
+          <div class="card pad"><div class="ct-row"><h3 class="ct">Headcount Trend</h3><div class="dx-lg"><span><i style="background:var(--accent)"></i>Headcount</span></div></div>
+            <div class="hc-top"><b>${total}</b><em class="up">+${hc.head[11] - hc.head[0]} in 12 mo</em><span class="muted">${hc.j.reduce((a, b) => a + b, 0)} joined · ${hc.l.reduce((a, b) => a + b, 0)} left</span></div>
+            ${B.area([{ name: 'Headcount', data: hc.head, color: 'var(--accent)' }], mLbl, { h: 150, ticks: 6 })}</div></section>
         <section class="dx-2"><div class="card pad">${head('Employee Distribution by Department')}${B.donut(deptCnt.map((d) => d), { center: total, label: 'Total Employees', fmt: (v) => `${v} <small class="muted">(${pct(v, total)}%)</small>` })}</div>
           <div class="card pad"><div class="ct-row"><h3 class="ct">Attendance Overview</h3><span class="pill mute">This Month</span></div>${B.vbars([{ label: 'Present', value: present, color: 'var(--ok)' }, { label: 'Late', value: late, color: 'var(--c1)' }, { label: 'Absent', value: absent, color: 'var(--warn)' }, { label: 'On Leave', value: onLeave, color: 'var(--c4)' }], { h: 210 })}</div></section>
         <section class="dx-2"><div class="card pad">${head('Recent Hires', 'View All', '#/list/employee')}<ul class="dx-hires">${hires.map((e) => `<li>${B.avatar(e.name, 34)}<div><b>${esc(e.name)}</b><span>${esc(e.dept)}</span></div><em>${B.fdate(e.doj)}</em></li>`).join('')}</ul></div>
@@ -62,18 +91,43 @@
             <div class="card pad">${head('Training & Development', 'View All', '#/list/training-event')}<div class="dx-train">${[['12', 'Ongoing Trainings'], ['8', 'Completed This Month'], ['96', 'Total Participants']].map((t) => `<div><b>${t[0]}</b><span>${t[1]}</span></div>`).join('')}</div></div></div></section>
         <section class="dx-2 dx-2b"><div class="card pad">${head('Approve Requests <span class="count" id="ap-count">' + apr.length + '</span>', 'View All', '#/list/leave-application')}<div class="tscroll"><table class="dt dx-ap"><thead><tr><th>Type</th><th>Employee</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody id="approvals">${apr.map((a) => `<tr><td><span class="dx-ti">${ic(a[1], 15)}</span>${a[0]}</td><td>${esc(a[2].name)}</td><td>${B.fdate(B.iso(B.addDays(B.today, a[4])))}</td><td>${B.pill('Pending')}</td><td class="dx-ab"><button class="btn sm ok" data-act="approve" data-r="1">Approve</button><button class="btn sm danger-o" data-act="approve" data-r="0">Reject</button></td></tr>`).join('')}</tbody></table></div></div>
           <div class="card pad">${head('Key HR Metrics', 'View All', '#/page/reports')}<div class="dx-met">${metrics.map((m) => `<div><span class="dx-mi">${ic(m[0], 16)}</span><span>${m[1]}</span><b>${m[2]} <small>${m[3]}</small></b><em class="${m[5] ? 'up' : 'down'}">${m[4]}</em></div>`).join('')}</div></div></section>
+
+        <section class="dx-2"><div class="card pad">${head('Probation & Contract Expiry <span class="count">' + expiries.length + '</span>', 'View All', '#/list/employee')}<ul class="dx-exp">${expiries.map((x) => `<li>${B.avatar(x.e.name, 34)}<div><b>${esc(x.e.name)}</b><span>${x.k} ends ${B.fdate(B.iso(x.end)).slice(0, 6)}</span></div><span class="pill ${tone(x.d)}">${x.d < 0 ? 'Ended' : x.d + ' d left'}</span></li>`).join('')}</ul></div>
+          <div class="card pad">${head('Documents & Compliance <span class="count">' + docs.length + '</span>')}<ul class="dx-exp dx-doc">${docs.map((x) => `<li><span class="dx-di ${tone(x[2])}">${ic(x[1] === 'Tax' || x[1] === 'Finance' ? 'dollar' : x[1] === 'Legal' ? 'file' : 'shield', 16)}</span><div><b>${x[0]}</b><span>${x[1]}</span></div><span class="pill ${tone(x[2])}">${x[2]} d</span></li>`).join('')}</ul></div></section>
+
+        <section><div class="card pad dx-lvwide">${head('Upcoming Leaves', 'View All', '#/list/leave-application')}<ul class="dx-lv">${leaves.map((l) => `<li><div class="lv-date"><em>${B.fdate(B.iso(B.addDays(B.today, l[3]))).slice(0, 6).split(' ')[1] || ''}</em><strong>${B.fdate(B.iso(B.addDays(B.today, l[3]))).slice(0, 2).trim()}</strong></div>${B.avatar(l[0].name, 38)}<div class="lv-info"><b>${esc(l[0].name)}</b><small>${esc(l[0].desig)}</small><small class="lv-r">${ic('calendar', 12)}${B.fdate(B.iso(B.addDays(B.today, l[3]))).slice(0, 6)} – ${B.fdate(B.iso(B.addDays(B.today, l[4])))}</small></div><div class="lv-side">${B.pill(l[1], l[2])}<small>${l[4] - l[3] + 1} day${l[4] - l[3] ? 's' : ''}</small></div></li>`).join('')}</ul></div></section>
       </div>
       <aside class="dx-rail">
-        <div class="card pad">${head('Quick Actions')}<div class="dx-qa">${[['user-plus', 'Add New Employee', '#/form/employee/new'], ['calendar', 'Apply Leave', '#/form/leave-application/new'], ['briefcase', 'Recruitment Request', '#/form/job-opening/new'], ['bars', 'Generate Report', '#/page/reports'], ['file', 'Update Employee Record', '#/list/employee'], ['dollar', 'Manage Payroll', '#/page/payroll-process']].map((q) => `<a href="${q[2]}"><span>${ic(q[0], 17)}</span>${q[1]}${ic('right', 14)}</a>`).join('')}</div></div>
-        <div class="card pad">${head('Upcoming Leaves', 'View All', '#/list/leave-application')}<ul class="dx-lv">${leaves.map((l) => `<li>${B.avatar(l[0].name, 38)}<div><b>${esc(l[0].name)}</b><span>${esc(l[0].desig)}</span><span>${B.fdate(B.iso(B.addDays(B.today, l[3]))).slice(0, 6)} – ${B.fdate(B.iso(B.addDays(B.today, l[4])))}</span></div>${B.pill(l[1], l[2])}</li>`).join('')}</ul></div>
+        <div class="card pad">${head('Quick Actions')}<div class="dx-qa">${[['user-plus', 'Add Employee', '#/form/employee/new'], ['calendar', 'Apply Leave', '#/form/leave-application/new'], ['briefcase', 'Recruitment', '#/form/job-opening/new'], ['bars', 'Generate Report', '#/page/reports'], ['file', 'Update Records', '#/list/employee'], ['dollar', 'Manage Payroll', '#/page/payroll-process'], ['clock', 'Attendance', '#/list/attendance'], ['check', 'Leave Approvals', '#/page/leave-approvals'], ['users', 'Org Chart', '#/page/orgchart']].map((q) => `<a href="${q[2]}"><span>${ic(q[0], 17)}</span>${q[1]}${ic('right', 14)}</a>`).join('')}</div></div>
+        <div class="card pad dx-cel">${head('Birthdays & Anniversaries')}<div class="dx-tabs"><button class="on" data-act="dx-tab" data-t="b">${ic('gift', 14)}Birthdays</button><button data-act="dx-tab" data-t="a">${ic('star', 14)}Anniversaries</button></div>
+          <ul class="dx-hires dx-cl" data-p="b">${bdays.map((x) => celebRow(x, B.fdate(B.iso(x.n)).slice(0, 6) + ' · turns ' + (x.n.getFullYear() - B.parse(x.e.dob).getFullYear()))).join('')}</ul>
+          <ul class="dx-hires dx-cl" data-p="a" hidden>${annis.map((x) => celebRow(x, x.y + (x.y === 1 ? ' year' : ' years') + ' · ' + esc(x.e.dept))).join('')}</ul></div>
+        <div class="card pad">${head('Upcoming Holidays', 'View All', '#/list/holiday-list')}<ul class="dx-hol">${HOL.map((h, i) => `<li class="${i === 0 ? 'next' : ''}"><div class="lv-date"><em>${B.MONTHS[h.n.getMonth()]}</em><strong>${B.pad(h.n.getDate())}</strong></div><div><b>${h.name}</b><span>${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][h.n.getDay()]}</span></div><span class="pill ${i === 0 ? 'ok' : 'mute'}">${inLbl(h.d)}</span></li>`).join('')}</ul></div>
+        <div class="card pad" id="dx-todo">${B.dxTodo ? B.dxTodo() : ''}</div>
         <div class="card pad">${head('Recent Activities', 'View All', '#/page/announcements')}<ul class="dx-act">${acts.map((a) => `<li class="${a[0]}"><i></i><div><span>${a[1]}</span><em>${esc(a[2])}</em></div></li>`).join('')}</ul></div>
       </aside></div>
-      <section><div class="ct-row"><h3 class="ct">All modules</h3><span class="muted">Everything in Frappe HRMS, in one place</span></div><div class="mods">${mods.map((m) => `<a class="card mod" href="#/module/${m.id}"><span class="mod-ic">${ic(m.icon, 22)}</span><div><b>${m.label}</b><span>${m.desc}</span></div><em>${m.items.length}</em></a>`).join('')}</div></section></div>`;
+      <section><div class="ct-row"><h3 class="ct">All modules</h3></div><div class="mods">${mods.map((m) => `<a class="card mod" href="#/module/${m.id}"><span class="mod-ic">${ic(m.icon, 22)}</span><div><b>${m.label}</b><span>${m.desc}</span></div><em>${m.items.length}</em></a>`).join('')}</div></section></div>`;
   };
   B.act.approve = (t) => { const li = t.closest('li,tr'), ok = t.dataset.r === '1'; li.classList.add('gone'); setTimeout(() => { li.remove(); const c = B.$('#ap-count'); if (c) c.textContent = B.$$('#approvals > *').length; }, 250); B.toast(ok ? 'Request approved' : 'Request rejected', ok ? 'ok' : 'bad'); };
   let ciOn = false;
   B.act['hero-checkin'] = (t) => { ciOn = !ciOn; t.innerHTML = ic('fingerprint', 16) + (ciOn ? 'Check Out' : 'Check In'); B.toast(ciOn ? 'Checked in at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Checked out. See you tomorrow!'); };
-  B.onHome = () => { const c = B.$('#hero-clock'); if (!c) return; const f = () => { const d = new Date(); if (c.isConnected) c.textContent = B.pad(d.getHours()) + ':' + B.pad(d.getMinutes()); else clearInterval(iv); }; const iv = setInterval(f, 15000); f(); };
+  B.dxTodo = () => {
+    const tds = B.todos ? B.todos.list() : [], open = tds.filter((t) => !t.done), tdy = B.todos ? B.todos.todayISO() : '';
+    const rows = tds.slice().sort((a, b) => (a.done - b.done) || ((a.due || '9') < (b.due || '9') ? -1 : 1)).slice(0, 5);
+    const pct = tds.length ? Math.round(((tds.length - open.length) / tds.length) * 100) : 0;
+    return `<div class="ct-row"><h3 class="ct">My To-dos <span class="count">${open.length}</span></h3><a class="link-btn" href="#/page/todo">View All</a></div>
+      <div class="td-prog"><i style="width:${pct}%"></i></div><div class="td-pl">${pct}% complete</div>
+      <ul class="dx-td">${rows.map((t) => `<li class="${t.done ? 'done' : ''}"><button class="dx-ck" data-act="dx-td" data-id="${t.id}" aria-label="Toggle">${t.done ? ic('check', 12) : ''}</button><div><b>${esc(t.t)}</b><span class="${!t.done && t.due && t.due < tdy ? 'late' : ''}">${t.due ? (t.due === tdy ? 'Today' : B.fdate(t.due).slice(0, 6)) : 'No date'} · ${t.pr}</span></div></li>`).join('') || '<li class="empty-s">All caught up 🎉</li>'}</ul>
+      <div class="dx-tadd"><input class="inp sm" id="dx-tq" placeholder="Add a to-do, press Enter…"><button class="btn sm primary" data-act="dx-tadd">${ic('plus', 14)}</button></div>`;
+  };
+  const dxRe = () => { const w = B.$('#dx-todo'); if (w) w.innerHTML = B.dxTodo(); };
+  B.act['dx-td'] = (t) => { const it = B.todos.list().find((x) => x.id === t.dataset.id); if (!it) return; it.done = !it.done; B.todos.save(); dxRe(); };
+  B.act['dx-tadd'] = () => { const i = B.$('#dx-tq'); const v = i && i.value.trim(); if (!v) return; B.todos.list().unshift({ id: 'd' + Date.now(), t: v, pr: 'Medium', due: B.todos.todayISO(), cat: 'Work', note: '', done: false, created: Date.now() }); B.todos.save(); dxRe(); B.toast('To-do added'); };
+  document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.id === 'dx-tq') { e.preventDefault(); B.act['dx-tadd'](); } });
+  B.act['dx-tab'] = (t) => { const c = t.closest('.dx-cel'); c.querySelectorAll('.dx-tabs button').forEach((b) => b.classList.toggle('on', b === t)); c.querySelectorAll('.dx-cl').forEach((u) => { u.hidden = u.dataset.p !== t.dataset.t; }); };
+  B.act['dx-wish'] = (t) => B.toast('Wishes sent to ' + t.dataset.n + ' 🎉');
+  B.onHome = () => { B.$$('.dx-kpi b').forEach((b) => { const n = parseInt(b.textContent, 10); if (!(n > 0) || matchMedia('(prefers-reduced-motion: reduce)').matches) return; const t0 = performance.now(); const f = (t) => { const k = Math.min(1, (t - t0) / 700); b.textContent = Math.round(n * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); });
+    const c = B.$('#hero-clock'); if (!c) return; const f = () => { const d = new Date(); if (c.isConnected) c.textContent = B.pad(d.getHours()) + ':' + B.pad(d.getMinutes()); else clearInterval(iv); }; const iv = setInterval(f, 15000); f(); };
 
   /* ================= MODULE WORKSPACE ================= */
   B.renderModule = (id) => {

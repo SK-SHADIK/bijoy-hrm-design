@@ -22,3 +22,7 @@
 .fl-docs { list-style: none; margin: 0 0 12px; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; } @media (max-width: 560px) { .fl-docs { grid-template-columns: 1fr; } }
 .fl-bulk { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: center; } @media (max-width: 700px) { .fl-bulk { grid-template-columns: 1fr; } }
 .fl-sim .fl-big { margin: 10px 0; font-size: 20px; } .fl-sim.ok { border-left: 4px solid var(--ok); } .fl-sim.warn { border-left: 4px solid var(--warn); } .fl-sim.bad { border-left: 4px solid var(--bad); }
+
+/* draggable approval levels */
+.fl-lvls .fl-grip { display: grid; place-items: center; width: 16px; color: var(--text-3); flex: none; } .fl-lvls li.fl-drag { cursor: grab; background: var(--surface); transition: box-shadow .15s, border-color .15s; } .fl-lvls li.fl-drag:hover { border-color: var(--accent); box-shadow: var(--shadow-sm); } .fl-lvls li.fl-drag:hover .fl-grip { color: var(--accent); }
+.fl-lvls li.dragging { opacity: .45; } .fl-lvls li.over { border-color: var(--accent); box-shadow: 0 -3px 0 var(--accent); } .fl-lvls li.fl-lock { opacity: .85; }

@@ -22,6 +22,7 @@
   }
   const list = () => (mem && mem.role === B.role ? mem.items : (mem = { role: B.role, items: load() }).items);
   const save = () => { try { localStorage.setItem(KEY(), JSON.stringify(list())); } catch (e) {} };
+  B.todos = { list, save, todayISO };
   const overdue = (t) => !t.done && t.due && t.due < todayISO();
   const dueLabel = (t) => {
     if (!t.due) return '';

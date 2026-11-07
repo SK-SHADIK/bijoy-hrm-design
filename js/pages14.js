@@ -221,7 +221,17 @@
     const trk = `<div class="fl-trk-wrap"><ul class="cl-trk fl-trk">${wfi.map((x) => `<li class="${x.c}"><i>${x.c === 'done' ? ic('check', 13) : x.i + 1}</i><span>${x.s}<em>${['HR prepares', 'Managing Director', 'HR publishes'][x.i]}</em></span></li>`).join('')}</ul></div>`;
     const btn = y.wf === 'Draft' ? `<button class="btn primary" data-act="hc-wf" data-to="MD approved">${ic('check', 15)}Record MD approval</button>` : y.wf === 'MD approved' ? `<button class="btn primary" data-act="hc-wf" data-to="Published">${ic('send', 15)}Publish to all staff</button><button class="btn" data-act="hc-wf" data-to="Draft">Back to draft</button>` : `<span class="muted">${ic('lock', 14)} Locked. HR edits need a note.</span>`;
     let body;
-    if (t === 'cal') body = `<div class="card pad"><div class="p14-row"><button class="btn sm" data-act="hc-m" data-n="-1">${ic('left', 14)}</button><b style="min-width:130px;text-align:center">${MN[F.hc.month]} ${y.year}</b><button class="btn sm" data-act="hc-m" data-n="1">${ic('right', 14)}</button>${sel(MN.map((n, i) => [String(i), n]), String(F.hc.month), 'data-chg="hcmonth"')}</div>${calGrid(y)}</div>`;
+    if (t === 'cal') {
+      const m = F.hc.month, dim = new Date(y.year, m + 1, 0).getDate(), td = today();
+      let hol = 0, alt = 0, fri = 0, work = 0;
+      for (let n = 1; n <= dim; n++) { const d = y.year + '-' + B.pad(m + 1) + '-' + B.pad(n), isH = y.days.some((x) => x.date === d && x.type !== 'Alternate Saturday'), isA = y.altSaturdays.includes(d), g = dow(d); if (isH) hol++; if (isA) alt++; if (g === 5) fri++; if (g !== 5 && !isH && !isA) work++; }
+      const up = y.days.filter((x) => x.type !== 'Alternate Saturday' && x.date >= td).slice(0, 6), inD = (d) => Math.round((new Date(d + 'T00:00') - new Date(td + 'T00:00')) / 864e5);
+      const strip = MN.map((n, i) => { const c2 = y.days.filter((x) => x.type !== 'Alternate Saturday' && +x.date.slice(5, 7) === i + 1).length; return `<button class="${i === m ? 'on' : ''}" data-act="hc-mset" data-n="${i}"><span>${n.slice(0, 3)}</span><b>${c2}</b></button>`; }).join('');
+      body = `<div class="p14-hc"><div class="card pad"><div class="p14-row"><button class="btn sm" data-act="hc-m" data-n="-1">${ic('left', 14)}</button><b class="p14-mt">${MN[m]} ${y.year}</b><button class="btn sm" data-act="hc-m" data-n="1">${ic('right', 14)}</button></div>${calGrid(y)}</div>
+        <aside><div class="card pad p14-ms"><h3 class="ct">${MN[m]} at a glance</h3><div><div><b>${hol}</b><span>Holidays</span></div><div><b>${alt}</b><span>Alt. Saturdays</span></div><div><b>${fri}</b><span>Fridays off</span></div><div class="ok"><b>${work}</b><span>Working days</span></div></div></div>
+          <div class="card pad"><h3 class="ct">Upcoming holidays</h3>${up.length ? `<ul class="p14-up">${up.map((x) => `<li><span class="${x.type}"><b>${new Date(x.date + 'T00:00').getDate()}</b>${new Date(x.date + 'T00:00').toLocaleDateString('en-GB', { month: 'short' })}</span><div><b>${esc(x.name)}</b><em>${wd(x.date)} · ${inD(x.date) === 0 ? 'Today' : inD(x.date) === 1 ? 'Tomorrow' : 'In ' + inD(x.date) + ' days'}</em></div></li>`).join('')}</ul>` : '<p class="muted">No more holidays this year.</p>'}</div></aside></div>
+        <div class="card pad p14-yr"><h3 class="ct">Holidays by month</h3><div>${strip}</div></div>`;
+    }
     else if (t === 'list') body = `<div class="card table-card"><div class="tscroll"><table class="dt"><thead><tr><th>Date</th><th>Day</th><th>Holiday</th><th>Type</th><th>Status</th><th class="r"></th></tr></thead><tbody>${y.days.filter((x) => x.type !== 'Alternate Saturday').map((x) => `<tr data-id="${x.date}"><td><b>${fmt(x.date)}</b></td><td>${wd(x.date)}</td><td>${esc(x.name)}</td><td>${pill(x.type)}</td><td>${pill(x.status)}</td><td class="r"><button class="icon-btn sm" data-act="hc-del" aria-label="Remove">${ic('trash', 15)}</button></td></tr>`).join('') || '<tr><td colspan="6"><div class="empty">No holidays yet for ' + y.year + '</div></td></tr>'}</tbody></table></div></div>`;
     else if (t === 'alt') {
       const sats = []; let d = y.year + '-01-01'; while (dow(d) !== 6) d = day(1, d); while (+d.slice(0, 4) === y.year) { sats.push(d); d = day(7, d); }
@@ -238,6 +248,7 @@
   });
   B.act['hc-tab'] = (t) => { F.hc.tab = t.dataset.t; rerender(); };
   B.act['hc-m'] = (t) => { F.hc.month = (F.hc.month + +t.dataset.n + 12) % 12; rerender(); };
+  B.act['hc-mset'] = (t) => { F.hc.month = +t.dataset.n; rerender(); };
   B.chg.hcmonth = (t) => { F.hc.month = +t.value; rerender(); };
   B.chg.hcyear = (t) => { F.hc.year = +t.value; rerender(); };
   B.act['hc-wf'] = (t) => {

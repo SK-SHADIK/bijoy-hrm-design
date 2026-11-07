@@ -145,8 +145,8 @@
     const C = D().chains;
     const card = (k, note) => { const c = C[k]; return `<div class="card pad" data-id="${k}"><div class="ct-row"><h3 class="ct">${c.label} approval</h3>${k === 'requisition' ? `<button class="btn sm" data-act="fl-ch-add">${ic('plus', 14)}Add level</button>` : ''}</div>
       ${tracker(c.stages.map((s, i) => ({ n: i + 1, t: s.t, sub: s.sub, c: s.k === 'hr' ? 'now' : '' })))}
-      <p class="muted" style="margin:0 0 10px">${note}</p>
-      ${k === 'requisition' ? `<ul class="fl-lvls">${c.stages.map((s, i) => `<li data-i="${i}"><b>${i + 1}</b><span>${esc(s.t)}${s.sub ? ' · ' + esc(s.sub) : ''}</span>${s.k === 'lv' ? `<button class="icon-btn sm" data-act="fl-ch-del" aria-label="Remove level">${ic('trash', 15)}</button>` : '<em>fixed</em>'}</li>`).join('')}</ul>` : ''}
+      <p class="muted" style="margin:0 0 10px">${note}${k === 'requisition' ? ' <b>Drag the extra levels to reorder them.</b>' : ''}</p>
+      ${k === 'requisition' ? `<ul class="fl-lvls">${c.stages.map((s, i) => `<li data-i="${i}" ${s.k === 'lv' ? 'draggable="true" class="fl-drag"' : 'class="fl-lock"'}><i class="fl-grip" title="${s.k === 'lv' ? 'Drag to reorder' : 'Fixed position'}">${s.k === 'lv' ? '<svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor"><circle cx="3" cy="3" r="1.4"/><circle cx="9" cy="3" r="1.4"/><circle cx="3" cy="8" r="1.4"/><circle cx="9" cy="8" r="1.4"/><circle cx="3" cy="13" r="1.4"/><circle cx="9" cy="13" r="1.4"/></svg>' : ic('lock', 13)}</i><b>${i + 1}</b><span>${esc(s.t)}${s.sub ? ' · ' + esc(s.sub) : ''}</span>${s.k === 'lv' ? `<button class="icon-btn sm" data-act="fl-ch-del" aria-label="Remove level">${ic('trash', 15)}</button>` : '<em>fixed</em>'}</li>`).join('')}</ul>` : ''}
       <label class="fl-sw"><input type="checkbox" data-chg="flchov" ${c.hrOverride ? 'checked' : ''} ${k === 'requisition' ? 'disabled' : ''}><span><b>HR can approve at any stage</b><em>${k === 'requisition' ? 'HR decides the extra levels at its own step instead' : 'HR sees every pending request and can approve or reject it at any stage'}</em></span></label></div>`; };
     return `${B.head('Approval Chains', 'Who approves what, in which order. Used by Requisition, Leave and Work From Home.', '', crumbs('HR Setup', 'Approval Chains'))}
       <div class="stack">${card('requisition', 'Line Manager → Cross Line Manager → HR. HR decides who and how many more approvers are needed (Level 1 … N) when it approves a requisition.')}${card('leave', 'Employee applies by leave type. Line Manager → Cross Line Manager → HR.')}${card('wfh', 'Line Manager → Cross Line Manager → HR → CEO / MD. On an HR open date no approval is needed.')}</div>
@@ -154,6 +154,17 @@
   });
   B.act['fl-ch-add'] = () => B.modal({ title: 'Add approval level', body: grid(field('Level title', `<input class="inp" id="flm-t" value="Level ${D().chains.requisition.stages.filter((s) => s.k === 'lv').length + 1}">`) + field('Role / designation', '<input class="inp" id="flm-s" placeholder="e.g. Director, CEO, MD, Chairman">')), foot: '<button class="btn" data-act="close-modal">Cancel</button><button class="btn primary" data-act="fl-ch-do-add">Add level</button>' });
   B.act['fl-ch-do-add'] = () => { const t = B.$('#flm-t').value.trim(), s = B.$('#flm-s').value.trim(); if (!t) { B.toast('Enter a level title', 'bad'); return; } D().chains.requisition.stages.push({ k: 'lv', t, sub: s }); done('Level added'); };
+  /* drag to reorder the extra approval levels (the first three steps are fixed) */
+  let dragI = null;
+  const lvLi = (e) => e.target.closest && e.target.closest('.fl-lvls li');
+  document.addEventListener('dragstart', (e) => { const li = lvLi(e); if (!li || !li.classList.contains('fl-drag')) return; dragI = +li.dataset.i; li.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(dragI)); } catch (x) {} });
+  document.addEventListener('dragover', (e) => { const li = lvLi(e); if (dragI === null || !li) return; B.$$('.fl-lvls li.over').forEach((x) => x.classList.remove('over')); if (li.classList.contains('fl-drag')) { e.preventDefault(); li.classList.add('over'); } });
+  document.addEventListener('dragend', () => { dragI = null; B.$$('.fl-lvls li').forEach((x) => x.classList.remove('dragging', 'over')); });
+  document.addEventListener('drop', (e) => {
+    const li = lvLi(e); if (dragI === null || !li || !li.classList.contains('fl-drag')) return; e.preventDefault();
+    const to = +li.dataset.i, st = D().chains.requisition.stages;
+    if (to !== dragI) { const [m] = st.splice(dragI, 1); st.splice(to, 0, m); let n = 0; st.forEach((x) => { if (x.k === 'lv') { n++; if (/^Level \d+$/.test(x.t)) x.t = 'Level ' + n; } }); dragI = null; done('Approval order updated'); } else dragI = null;
+  });
   B.act['fl-ch-del'] = (t) => { D().chains.requisition.stages.splice(+t.closest('li').dataset.i, 1); done('Level removed'); };
   B.chg.flchov = (t) => { D().chains[rid(t)].hrOverride = t.checked; save(); B.toast('Saved'); };
 
@@ -389,6 +400,7 @@
     const t = ro + delay, tip = rg() > 0.08 ? hhmm(t) : '', zk = rg() > 0.1 ? hhmm(t + (rg() > 0.5 ? 1 : 0)) : '', used = [tip, zk].filter(Boolean).sort()[0] || '';
     return { e, r, tip, zk, used, res: used ? classify(r, used) : null };
   });
+  B.fl2 = { emps, rosterOf, classify, mins, hhmm, D, save, today };
   const ago = (ms) => Math.max(1, Math.round((Date.now() - ms) / 60000)) + ' min ago';
   page('office-attendance', () => {
     const P = punches(), D_ = D().devices, c = (s) => P.filter((p) => p.res && p.res.s === s).length;

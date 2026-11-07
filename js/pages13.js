@@ -63,7 +63,14 @@
   /* ---------- store + seed ---------- */
   let db = null;
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} };
-  const D = () => { if (!db) { try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {} if (!db || !db.apps) { db = { seq: 0, apps: [], perms: [], hours: [], credits: [], over: [], payroll: [], audit: [], cfg: { earned: 18 } }; seed(); save(); } } return db; };
+  const D = () => { if (!db) { try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {} if (!db || !db.apps) { db = { seq: 0, apps: [], perms: [], hours: [], credits: [], over: [], payroll: [], audit: [], cfg: { earned: 18 } }; seed(); save(); } if (!db.todayDemo) { db.todayDemo = true; demoToday(); save(); } } return db; };
+  function demoToday() {
+    const E = emps(), n = (i) => E[i % E.length].name;
+    [[3, 'Sick Leave', -1, 1, 'Fever and rest'], [6, 'Casual Leave', 0, 0, 'Family function'], [9, 'Earned Leave', -2, 2, 'Travel to village home'], [12, 'Casual Leave', 0, 1, 'Personal work'], [15, 'Paternity Leave', -1, 3, 'Newborn at home']].forEach(([i, type, a, b, reason]) => {
+      const emp = n(i); if (db.apps.some((x) => x.emp === emp && x.from <= today() && x.to >= today() && x.status !== 'Cancelled')) return;
+      mkApp({ emp, type, from: day(a), to: day(b), reason, hand: n(i + 4), contact: '01711-' + B.pad(100000 + i * 7331, 6).slice(0, 6), created: day(a - 4), stages: stages(emp, 'Approved', day(a - 2)) });
+    });
+  }
   const nid = () => 'LA-' + B.pad(++D().seq, 4);
   const curIdx = (st) => st.findIndex((s) => s.s === 'Pending');
   const overall = (st) => (st.some((s) => s.s === 'Rejected') ? 'Rejected' : st.every((s) => s.s === 'Approved') ? 'Approved' : 'Pending');
@@ -122,7 +129,7 @@
   const audit = (kind, ref, emp, action, reason, detail) => D().audit.unshift({ at: Date.now(), kind, ref, emp, action, reason, detail, by: me().name });
 
   /* ---------- plumbing ---------- */
-  const PG = {}, F = { tab: 'reg', cp: 'perm', q: '', dept: '' }; let cur = '';
+  const PG = {}, F = { tab: 'reg', cp: 'perm', q: '', dept: '', st: '', ty: '' }; let cur = '';
   const rerender = () => { const v = B.$('#view .fade'); if (v && PG[cur]) v.innerHTML = PG[cur](); };
   const page = (n, fn) => { PG[n] = fn; B.page[n] = () => { cur = n; D(); return fn(); }; };
   const done = (msg) => { save(); B.closeModal(); rerender(); if (msg) B.toast(msg); };
@@ -369,8 +376,12 @@
     const t = F.tab, A = D().apps, ty = ['Casual Leave', 'Sick Leave', 'Earned Leave', 'Maternity Leave', 'Paternity Leave', 'Quarantine Leave', 'Compensatory Off', 'Leave Without Pay'];
     const short = (x) => x.replace(' Leave', '').replace('Leave Without Pay', 'LWP').replace('Compensatory Off', 'Comp');
     let body = '';
-    if (t === 'reg') body = tbl(['ID', 'Employee', 'Type', 'Dates', 'Days', 'Status', 'Approver / stage', 'Decline reason'], A.filter((a) => !F.q || a.emp.toLowerCase().includes(F.q.toLowerCase())).map((a) => { const st = status(a), rj = a.stages.find((s) => s.s === 'Rejected'), last = a.stages.filter((s) => s.s === 'Approved').pop(); return `<tr><td>${a.id}</td><td>${who(a.emp)}</td><td>${esc(a.type)}</td><td>${fmtS(a.from)}${a.to !== a.from ? ' – ' + fmtS(a.to) : ''}</td><td>${a.days}</td><td>${pill(st)}</td><td>${esc(st === 'Pending' ? statusHead(a) : rj ? rj.by : last ? last.by : '—')}</td><td>${esc(rj ? rj.note : '')}</td></tr>`; }));
-    if (t === 'pend') body = tbl(['ID', 'Employee', 'Type', 'Dates', 'Current stage', 'Waiting on', 'Waiting time'], A.filter((a) => status(a) === 'Pending').map((a) => { const s = a.stages[curIdx(a.stages)], w = dayWaited(a); return `<tr><td>${a.id}</td><td>${who(a.emp)}</td><td>${esc(a.type)}</td><td>${fmtS(a.from)}–${fmtS(a.to)}</td><td>${esc(stageNote(s))}</td><td>${esc(s.who)}</td><td>${B.pill(w + ' day' + (w === 1 ? '' : 's'), w >= 3 ? 'bad' : w >= 2 ? 'warn' : 'ok')}</td></tr>`; }));
+    const TCL = { 'Casual Leave': 'var(--accent)', 'Sick Leave': 'var(--bad)', 'Earned Leave': 'var(--ok)', 'Maternity Leave': 'var(--c4)', 'Paternity Leave': 'var(--c4)', 'Quarantine Leave': 'var(--warn)', 'Compensatory Off': 'var(--c4)', 'Leave Without Pay': 'var(--c2)' };
+    const tchip = (x) => `<span class="la-ty" style="--lc:${TCL[x] || 'var(--accent)'}"><i></i>${esc(x)}</span>`;
+    const link = (a) => `data-act="row" data-href="#/list/leave-application/app/${encodeURIComponent(a.id)}" style="cursor:pointer"`;
+    const rows = A.filter((a) => (!F.q || (a.emp + a.id + a.type).toLowerCase().includes(F.q.toLowerCase())) && (!F.st || status(a) === F.st) && (!F.ty || a.type === F.ty));
+    if (t === 'reg') body = `<div class="card table-card"><div class="tscroll"><table class="dt iv-t la-t"><thead><tr><th>ID</th><th>Employee</th><th>Leave type</th><th>Dates</th><th class="r">Days</th><th>Status</th><th>Approver / stage</th><th>Decline reason</th></tr></thead><tbody>${rows.map((a) => { const st = status(a), rj = a.stages.find((x) => x.s === 'Rejected'), last = a.stages.filter((x) => x.s === 'Approved').pop(), e = eByName(a.emp); return `<tr ${link(a)}><td><span class="fl-id">${a.id}</span></td><td><span class="who">${B.avatar(a.emp, 32)}<span><b>${esc(a.emp)}</b><em class="sub">${esc(e.dept || '')}</em></span></span></td><td>${tchip(a.type)}</td><td>${fmtS(a.from)}${a.to !== a.from ? ' – ' + fmtS(a.to) : ''}<em class="sub">${wd(a.from)}${a.to !== a.from ? ' – ' + wd(a.to) : ''}</em></td><td class="r"><b>${a.days}</b></td><td>${pill(st)}</td><td>${st === 'Pending' ? `<span class="la-wait">${ic('clock', 12)}${esc(statusHead(a).replace('Waiting · ', ''))}</span>` : esc(rj ? rj.by : last ? last.by : '—')}${last && st !== 'Pending' ? `<em class="sub">${fmtS(last.at)}</em>` : ''}</td><td>${rj && rj.note ? `<span class="rp-note" title="${esc(rj.note)}">${esc(rj.note)}</span>` : '<span class="muted">—</span>'}</td></tr>`; }).join('') || `<tr><td colspan="8"><div class="empty">${ic('search', 30)}<b>No records match</b></div></td></tr>`}</tbody></table></div></div>`;
+    if (t === 'pend') body = tbl(['ID', 'Employee', 'Type', 'Dates', 'Current stage', 'Waiting on', 'Waiting time'], A.filter((a) => status(a) === 'Pending').map((a) => { const s = a.stages[curIdx(a.stages)], w = dayWaited(a); return `<tr ${link(a)}><td><span class="fl-id">${a.id}</span></td><td>${who(a.emp)}</td><td>${tchip(a.type)}</td><td>${fmtS(a.from)}–${fmtS(a.to)}</td><td>${esc(stageNote(s))}</td><td>${esc(s.who)}</td><td>${B.pill(w + ' day' + (w === 1 ? '' : 's'), w >= 3 ? 'bad' : w >= 2 ? 'warn' : 'ok')}</td></tr>`; }));
     if (t === 'dept') {
       const dd = {}; A.filter(live).forEach((a) => { const d = eByName(a.emp).dept || 'Other'; (dd[d] = dd[d] || {})[a.type] = ((dd[d] || {})[a.type] || 0) + a.days; });
       const mm = {}; A.filter(live).forEach((a) => { const m = a.from.slice(0, 7); (mm[m] = mm[m] || {})[a.type] = (mm[m][a.type] || 0) + a.days; });
@@ -381,12 +392,19 @@
     }
     if (t === 'comp') body = tbl(['Credit', 'Employee', 'Earned', 'Lapses', 'Days left', 'Status'], D().credits.map((c) => `<tr><td>${c.id}</td><td>${who(c.emp)}</td><td>${fmt(c.earned)}</td><td>${fmt(c.expires)}</td><td>${leftBadge(c) || '—'}</td><td>${pill(credState(c))}</td></tr>`));
     if (t === 'lwp') { const rows = D().over.map((r) => ({ r, o: split(r) })).filter((x) => x.o.l || x.o.over); body = `<div class="as-note" style="margin-bottom:12px">${ic('send', 14)} Sent to Payroll: ${D().payroll.reduce((s, p) => s + p.days, 0)} LWP day(s) in ${D().payroll.length} batch(es). Apply LWP leave is counted separately below.</div>` + tbl(['Employee', 'Sick used', 'Over 14', 'Casual', 'Earned', 'LWP', 'Payroll'], rows.map(({ r, o }) => `<tr><td>${who(r.emp)}</td><td>${r.sick}</td><td>${o.over}</td><td>${o.c}</td><td>${o.e}</td><td><b>${o.l}</b></td><td>${o.l ? pill(r.sent >= o.l ? 'Sent' : 'Not sent') : '—'}</td></tr>`)) + `<h3 class="ct" style="margin:20px 0 10px">Approved LWP applications</h3>` + tbl(['ID', 'Employee', 'Dates', 'Days', 'Status'], A.filter((a) => a.type === 'Leave Without Pay').map((a) => `<tr><td>${a.id}</td><td>${who(a.emp)}</td><td>${fmtS(a.from)}–${fmtS(a.to)}</td><td>${a.days}</td><td>${pill(status(a))}</td></tr>`)); }
-    return `${B.head('Leave Reports', 'Register, pending approvals, department summary, compensatory credits and LWP sent to Payroll.', '', crumbs('Leave Reports'))}
+    const LVa = A.filter(live), mon = Array.from({ length: 6 }, (_, i) => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 5 + i); return d; });
+    const trend = mon.map((d, i) => { const k = d.getFullYear() + '-' + B.pad(d.getMonth() + 1); return { label: d.toLocaleDateString('en-GB', { month: 'short' }), value: LVa.filter((a) => a.from.slice(0, 7) === k).reduce((n, a) => n + a.days, 0), color: i === 5 ? 'var(--accent)' : 'var(--c2)' }; });
+    const byT = ty.map((x) => ({ label: short(x), value: LVa.filter((a) => a.type === x).reduce((n, a) => n + a.days, 0) })).filter((x) => x.value);
+    const apv = A.filter((a) => status(a) === 'Approved').length, rjn = A.filter((a) => status(a) === 'Rejected').length;
+    const band = t === 'reg' || t === 'pend' ? `<section class="dx-2 rp-band"><div class="card pad"><div class="ct-row"><h3 class="ct">Leave days · last 6 months</h3><span class="pill info">${Math.round((apv / Math.max(1, apv + rjn)) * 100)}% approval rate</span></div>${B.vbars(trend, { h: 150 })}</div><div class="card pad"><div class="ct-row"><h3 class="ct">Days by leave type</h3></div>${B.donut(byT, { center: LVa.reduce((n, a) => n + a.days, 0), label: 'Total days' })}</div></section>` : '';
+    return `${B.head('Leave Reports', 'Register, pending approvals, department summary, compensatory credits and LWP sent to Payroll.', `<button class="btn" data-act="toast" data-msg="Report exported to CSV">${ic('download', 16)}Export</button><button class="btn" onclick="window.print()">${ic('print', 16)}Print</button>`, crumbs('Leave Reports'))}
       ${kp([Kp('list', 'Applications', A.length), Kp('clock', 'Pending', A.filter((a) => status(a) === 'Pending').length, 'warn'), Kp('check-circle', 'Approved', A.filter((a) => status(a) === 'Approved').length, 'ok'), Kp('x', 'Rejected', A.filter((a) => status(a) === 'Rejected').length, 'bad'), Kp('calendar', 'Days taken / booked', A.filter(live).reduce((s, a) => s + a.days, 0))])}
-      <div class="filterbar">${tabs([['reg', 'Leave register'], ['pend', 'Pending approvals'], ['dept', 'Summary by department'], ['comp', 'Compensatory'], ['lwp', 'LWP & overflow']], t, 'l13-rp-tab')}${t === 'reg' ? `<input class="inp" id="l13-q" data-chg="l13q" placeholder="Search employee" value="${esc(F.q)}" style="max-width:220px">` : ''}</div>${body}`;
+      ${band}<div class="filterbar">${tabs([['reg', 'Leave register <span class="count">' + A.length + '</span>'], ['pend', 'Pending approvals <span class="count">' + A.filter((a) => status(a) === 'Pending').length + '</span>'], ['dept', 'Summary by department'], ['comp', 'Compensatory'], ['lwp', 'LWP & overflow']], t, 'l13-rp-tab')}${t === 'reg' ? `<label class="search">${ic('search', 16)}<input class="inp" id="l13-q" data-chg="l13q" placeholder="Search employee, ID or type" value="${esc(F.q)}"></label><select class="inp" style="max-width:150px" data-chg="l13rst"><option value="">All statuses</option>${['Approved', 'Pending', 'Rejected', 'Cancelled'].map((x) => `<option ${F.st === x ? 'selected' : ''}>${x}</option>`).join('')}</select><select class="inp" style="max-width:190px" data-chg="l13rty"><option value="">All leave types</option>${ty.map((x) => `<option ${F.ty === x ? 'selected' : ''}>${x}</option>`).join('')}</select>` : ''}</div>${body}`;
   });
   B.act['l13-rp-tab'] = (t) => { F.tab = t.dataset.t; rerender(); };
-  B.chg.l13q = (t) => { F.q = t.value; rerender(); };
+  B.chg.l13q = (t) => { F.q = t.value; rerender(); const i = B.$('#l13-q'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } };
+  B.chg.l13rst = (t) => { F.st = t.value; rerender(); };
+  B.chg.l13rty = (t) => { F.ty = t.value; rerender(); };
 
   /* =====================================================================
      6. LEAVE TYPES & RULES
@@ -396,7 +414,50 @@
     <div class="as-note" style="margin-top:12px">${ic('calendar', 14)} <b>Holiday counting (Casual, Sick, Earned, Paternity, LWP):</b> a weekly or festival holiday inside the leave period counts as leave. A holiday just before or after the period is not counted. Example: Thu to Sat with Friday = 3 days; Thursday only = 1; Saturday only = 1. Friday is the weekly off${holDb().length ? '; ' + holDb().length + ' festival / alternate-Saturday holiday(s) loaded from the holiday calendar.' : '.'}</div>
     <div class="as-note" style="margin-top:10px">${ic('alert', 14)} Sick leave beyond 14 days: adjusted Casual, then Earned, then LWP. See <a href="#/page/sick-overflow">Sick Overflow &amp; LWP</a>.</div>`);
 
+  /* =====================================================================
+     LEAVE DASHBOARD
+     ===================================================================== */
+  page('leave-dash', () => {
+    const A = D().apps, t0 = today(), LV = A.filter(live), hc = emps().length;
+    const covers = (a, d) => a.from <= d && a.to >= d;
+    const onNow = A.filter((a) => status(a) === 'Approved' && covers(a, t0));
+    const pend = A.filter((a) => status(a) === 'Pending').map((a) => ({ a, w: dayWaited(a) })).sort((x, y) => y.w - x.w);
+    const upc = A.filter((a) => live(a) && a.from > t0 && diff(t0, a.from) <= 21).sort((x, y) => (x.from < y.from ? -1 : 1));
+    const mKey = (d) => d.slice(0, 7), nowM = mKey(t0);
+    const mDays = LV.filter((a) => mKey(a.from) === nowM).reduce((x, a) => x + a.days, 0);
+    const months = Array.from({ length: 6 }, (_, i) => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 5 + i); return d; });
+    const trend = months.map((d) => { const k = d.getFullYear() + '-' + B.pad(d.getMonth() + 1); return { label: d.toLocaleDateString('en-GB', { month: 'short' }), value: LV.filter((a) => mKey(a.from) === k).reduce((x, a) => x + a.days, 0), color: k === nowM ? 'var(--accent)' : 'var(--c2)' }; });
+    const TY = Object.keys(TYPES), short = (x) => x.replace(' Leave', '').replace('Leave Without Pay', 'LWP').replace('Compensatory Off', 'Comp');
+    const byType = TY.map((x) => ({ label: short(x), value: LV.filter((a) => a.type === x).reduce((n, a) => n + a.days, 0) })).filter((x) => x.value);
+    const dep = {}; LV.forEach((a) => { const d = eByName(a.emp).dept || 'Other'; dep[d] = (dep[d] || 0) + a.days; });
+    const byDept = Object.keys(dep).map((k) => ({ label: k, value: dep[k] })).sort((x, y) => y.value - x.value).slice(0, 6);
+    const strip = Array.from({ length: 14 }, (_, i) => { const d = day(i), n = A.filter((a) => live(a) && covers(a, d)).length; return { d, n, hol: isHol(d) }; });
+    const mx = Math.max(1, ...strip.map((x) => x.n));
+    const cr = D().credits.filter((c) => !c.usedBy && c.expires >= t0 && diff(t0, c.expires) <= 30).sort((x, y) => (x.expires < y.expires ? -1 : 1));
+    const ov = D().over.filter((r) => r.sick > 14).map((r) => ({ r, x: r.sick - 14 })).sort((x, y) => y.x - x.x).slice(0, 4);
+    const late = pend.filter((x) => x.w >= 3).length, apv = A.filter((a) => status(a) === 'Approved').length, rej = A.filter((a) => status(a) === 'Rejected').length;
+    const rate = A.length ? Math.round((apv / Math.max(1, apv + rej)) * 100) : 0;
+    const kpi4 = (i, l, v, sub, tone) => `<div class="card ivk"><span class="ivk-i ${tone || ''}">${ic(i, 18)}</span><div><b>${v}</b><span>${l}</span>${sub ? `<em class="ld-sub">${sub}</em>` : ''}</div></div>`;
+    return `${B.head('Leave Dashboard', 'Who is away, what is waiting for approval, and how leave is trending across the company.', `<a class="btn" href="#/page/leave-approvals">${ic('check-circle', 16)}Approvals</a><a class="btn primary" href="#/page/leave-apply">${ic('plus', 16)}Apply for leave</a>`, crumbs('Leave Dashboard'))}
+    <section class="iv-kpis">${kpi4('users', 'On leave today', onNow.length, Math.round((onNow.length / hc) * 100) + '% of ' + hc + ' staff', 'c')}${kpi4('clock', 'Pending approvals', pend.length, late ? late + ' waiting 3+ days' : 'All within SLA', late ? 'e' : 'a')}${kpi4('calendar', 'Leave days this month', mDays, 'Starting in ' + months[5].toLocaleDateString('en-GB', { month: 'long' }), 'a')}${kpi4('send', 'Upcoming (21 days)', upc.length, upc.length ? 'Next: ' + fmtS(upc[0].from) : 'None scheduled', 'b')}${kpi4('check-circle', 'Approval rate', rate + '%', apv + ' approved · ' + rej + ' rejected', 'd')}${kpi4('coffee', 'Comp-off expiring', cr.length, 'within 30 days', 'c')}</section>
+    <section class="dx-2"><div class="card pad"><div class="ct-row"><h3 class="ct">Who is on leave today</h3><span class="pill ${onNow.length ? 'warn' : 'ok'}"><i></i>${onNow.length}</span></div>${onNow.length ? `<ul class="dx-hires ld-list">${onNow.map((a) => `<li>${B.avatar(a.emp, 36)}<div><b>${esc(a.emp)}</b><span>${esc(eByName(a.emp).desig)} · ${esc(a.type)}</span></div><em>${fmtS(a.from)}${a.to !== a.from ? ' – ' + fmtS(a.to) : ''}</em></li>`).join('')}</ul>` : `<div class="empty">${ic('check-circle', 34)}<b>Everyone is in today</b></div>`}</div>
+      <div class="card pad"><div class="ct-row"><h3 class="ct">Next 14 days</h3><span class="muted">Employees on leave per day</span></div><div class="ld-strip">${strip.map((x) => `<div class="${x.hol ? 'hol' : ''}" data-tip="${wd(x.d)} ${fmtS(x.d)}: ${x.n} on leave${x.hol ? ' (' + holInfo(x.d) + ')' : ''}"><i><u style="height:${Math.max(x.n ? 12 : 3, (x.n / mx) * 100)}%"></u></i><b>${x.n || ''}</b><span>${new Date(x.d + 'T00:00').getDate()}</span><em>${wd(x.d).slice(0, 2)}</em></div>`).join('')}</div></div></section>
+    <section class="dx-2"><div class="card pad"><div class="ct-row"><h3 class="ct">Leave days · last 6 months</h3></div>${B.vbars(trend, { h: 190 })}</div>
+      <div class="card pad"><div class="ct-row"><h3 class="ct">Leave by type</h3></div>${B.donut(byType, { center: LV.reduce((n, a) => n + a.days, 0), label: 'Total days' })}</div></section>
+    <section class="dx-2"><div class="card pad"><div class="ct-row"><h3 class="ct">Awaiting approval <span class="count">${pend.length}</span></h3><a class="link-btn" href="#/page/leave-approvals">Open approvals</a></div>${pend.length ? `<ul class="dx-exp">${pend.slice(0, 5).map(({ a, w }) => { const s = a.stages[curIdx(a.stages)]; return `<li>${B.avatar(a.emp, 34)}<div><b>${esc(a.emp)}</b><span>${esc(a.type)} · ${fmtS(a.from)}${a.to !== a.from ? ' – ' + fmtS(a.to) : ''} · waiting on ${esc(s ? s.who : '—')}</span></div>${B.pill(w + ' d', w >= 3 ? 'bad' : w >= 2 ? 'warn' : 'ok')}</li>`; }).join('')}</ul>` : `<div class="empty">${ic('check-circle', 34)}<b>Nothing pending</b></div>`}</div>
+      <div class="card pad"><div class="ct-row"><h3 class="ct">Leave days by department</h3></div>${byDept.length ? B.hbars(byDept, { multi: true }) : '<p class="muted">No data</p>'}</div></section>
+    <section class="dx-2"><div class="card pad"><div class="ct-row"><h3 class="ct">Upcoming leaves</h3><a class="link-btn" href="#/page/leave-calendar">Calendar</a></div>${upc.length ? `<ul class="ld-up">${upc.slice(0, 5).map((a) => { const dl = diff(t0, a.from), LC = { 'Sick Leave': 'var(--bad)', 'Casual Leave': 'var(--accent)', 'Earned Leave': 'var(--ok)', 'Paternity Leave': 'var(--c4)', 'Maternity Leave': 'var(--c4)', 'Quarantine Leave': 'var(--warn)' }; return `<li style="--lc:${LC[a.type] || 'var(--c2)'}"><div class="lv-date ld-d"><em>${new Date(a.from + 'T00:00').toLocaleDateString('en-GB', { month: 'short' })}</em><strong>${new Date(a.from + 'T00:00').getDate()}</strong></div>${B.avatar(a.emp, 36)}<div class="ld-i"><b>${esc(a.emp)}</b><span><i></i>${esc(a.type)} · ${a.days} day${a.days > 1 ? 's' : ''}</span><small>${ic('calendar', 12)}${fmtS(a.from)}${a.to !== a.from ? ' – ' + fmtS(a.to) : ''}</small></div><div class="ld-r">${pill(status(a))}<em>${dl === 1 ? 'Tomorrow' : 'in ' + dl + ' days'}</em></div></li>`; }).join('')}</ul>` : '<p class="muted">No upcoming leave.</p>'}</div>
+      <div class="card pad"><div class="ct-row"><h3 class="ct">Attention needed</h3></div><div class="ld-alerts">
+        <div class="${late ? 'bad' : 'ok'}"><span>${ic('clock', 16)}</span><div><b>${late} approval${late === 1 ? '' : 's'} waiting 3+ days</b><em>Escalate or reassign the approver</em></div><a class="btn sm" href="#/page/leave-approvals">Review</a></div>
+        <div class="${cr.length ? 'warn' : 'ok'}"><span>${ic('coffee', 16)}</span><div><b>${cr.length} compensatory credit${cr.length === 1 ? '' : 's'} expiring in 30 days</b><em>${cr.length ? esc(cr[0].emp) + ' lapses ' + fmtS(cr[0].expires) : 'Nothing about to lapse'}</em></div><a class="btn sm" href="#/page/comp-leave">View</a></div>
+        <div class="${ov.length ? 'warn' : 'ok'}"><span>${ic('activity', 16)}</span><div><b>${ov.length} employee${ov.length === 1 ? '' : 's'} over the 14-day sick limit</b><em>${ov.length ? ov.map((o) => esc(o.r.emp.split(' ')[0]) + ' +' + o.x + 'd').join(' · ') : 'No overflow'}</em></div><a class="btn sm" href="#/page/sick-overflow">Manage</a></div></div></div></section>
+    <section class="ld-links">${[['edit', 'Apply for Leave', '#/page/leave-apply'], ['check-circle', 'Leave Approvals', '#/page/leave-approvals'], ['calendar', 'Leave Calendar', '#/page/leave-calendar'], ['pie', 'Leave Balance', '#/page/leave-balance'], ['book', 'Types & Rules', '#/page/leave-rules'], ['bars', 'Leave Reports', '#/page/leave-reports']].map((x) => `<a class="card" href="${x[2]}"><span>${ic(x[0], 18)}</span>${x[1]}${ic('right', 14)}</a>`).join('')}</section>`;
+  });
+
+  B.lvx = { D, save, status, live, bal, alloc, used, base, TYPES, eByName, curIdx, stageNote, countDays, dayWaited, mgrName, isHol, holInfo, me, isHR };
   /* ---------- registration ---------- */
+  B.PAGES['leave-dash'] = { label: 'Leave Dashboard', icon: 'pie' };
+  (() => { const m = B.NAV.find((x) => x.id === 'leaves'); if (m && !m.items.includes('p:leave-dash')) m.items.unshift('p:leave-dash'); })();
   [['leave-apply', 'Apply for Leave', 'edit'], ['sick-overflow', 'Sick Overflow & LWP', 'activity'], ['comp-leave', 'Compensatory Leave', 'clock'], ['leave-mgmt-actions', 'Management Actions', 'settings'], ['leave-reports', 'Leave Reports', 'pie'], ['leave-rules', 'Leave Types & Rules', 'book']].forEach(([id, label, icon]) => {
     B.PAGES[id] = { label, icon };
     const m = B.NAV.find((x) => x.id === 'leaves'); if (m && !m.items.includes('p:' + id)) m.items.push('p:' + id);

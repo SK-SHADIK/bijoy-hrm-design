@@ -61,12 +61,25 @@
   B.route = () => {
     const h = location.hash || '#/';
     const parts = h.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
-    const [k, a, b] = parts;
+    const [k, a, b, c] = parts;
     if (k === 'login') { mode = 'login'; document.title = 'Sign in · Sentradesk HRMS'; B.$('#app').innerHTML = B.renderLogin(); return; }
     if (mode !== 'shell') { shell(); mode = 'shell'; }
     let html, title = 'HR Home';
     try {
       if (!k) { if (B.role === 'employee') { html = B.page.me(); B.onMount(B.onMe); title = 'My Dashboard'; } else { html = B.page.home(); B.onMount(B.onHome); } }
+      else if (k === 'list' && a === 'interview-feedback') { location.replace('#/list/interview'); return; }
+      else if (k === 'list' && a === 'leave-policy-assignment' && (!b || b === 'pa') && B.renderLeavePolicyAssign) { html = B.renderLeavePolicyAssign(b, c); title = 'Leave Policy Assignment'; }
+      else if (k === 'list' && a === 'leave-allocation' && (!b || b === 'alloc') && B.renderLeaveAlloc) { html = B.renderLeaveAlloc(b, c); title = 'Leave Allocation'; }
+      else if (k === 'list' && a === 'attendance' && !b && B.renderAttendance) { html = B.renderAttendance(); title = 'Attendance'; }
+      else if (k === 'list' && a === 'employee-checkin' && !b && B.renderCheckins) { html = B.renderCheckins(); title = 'Employee Checkin'; }
+      else if (k === 'list' && a === 'attendance-request' && !b && B.renderAttReq) { html = B.renderAttReq(); title = 'Attendance Request'; }
+      else if (k === 'list' && a === 'shift-request' && !b && B.renderShiftReq) { html = B.renderShiftReq(); title = 'Shift Request'; }
+      else if (k === 'list' && a === 'shift-assignment' && !b && B.renderShiftAssign) { html = B.renderShiftAssign(); title = 'Shift Assignment'; }
+      else if (k === 'list' && a === 'shift-schedule-assignment' && !b && B.renderShiftSched) { html = B.renderShiftSched(); title = 'Shift Schedule Assignment'; }
+      else if (k === 'list' && a === 'leave-application' && (!b || b === 'app') && B.renderLeaveApps) { html = B.renderLeaveApps(b, c); title = 'Leave Application'; }
+      else if (k === 'list' && a === 'appointment-letter' && (!b || b === 'letter') && B.renderLetters) { html = B.renderLetters(b, c); title = 'Appointment Letter'; }
+      else if (k === 'list' && a === 'job-offer' && (!b || b === 'pos' || b === 'cand') && B.renderOffers) { html = B.renderOffers(b, c); title = 'Job Offer'; }
+      else if (k === 'list' && a === 'interview' && (!b || b === 'pos' || b === 'cand') && B.renderInterviews) { html = B.renderInterviews(b, c); title = 'Interview'; }
       else if (k === 'list' && B.docs[a]) { html = B.renderList(a, b); title = B.docs[a].label; }
       else if (k === 'form' && B.docs[a]) { html = B.renderForm(a, b || 'new'); title = B.docs[a].label; }
       else if (k === 'employee') { html = b === 'edit' ? B.renderEmployeeEdit(a) : B.renderEmployee(a); title = b === 'edit' ? 'Edit Employee' : 'Employee'; }
@@ -78,7 +91,7 @@
     document.title = title + ' · Sentradesk HRMS';
     window.scrollTo(0, 0);
     B.act['nav-close']();
-    let active = h; if (k === 'list' && b) active = '#/list/' + a; if (k === 'form') active = '#/list/' + a; if (k === 'employee') active = '#/list/employee';
+    let active = h; if (k === 'list' && b) active = '#/list/' + a; if (k === 'form') active = '#/list/' + a; if (k === 'page' && b) active = '#/page/' + a; if (k === 'employee') active = '#/list/employee';
     setActive(active);
     B.runMounts();
   };
